@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao diện Người mượn</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header-container">
+        <h1>TRANG SINH VIÊN / GIÁO VIÊN</h1>
+        <a href="index.html"><button style="background-color: #e74c3c;">Đăng xuất</button></a>
+    </div>
+    <hr>
+    
+    <h2>1. Danh mục thiết bị khả dụng</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Mã TB</th>
+                <th>Tên Thiết bị</th>
+                <th>Tình trạng</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="ds_thietbi">
+            <tr>
+                <td>TB-001</td>
+                <td>Máy chiếu Panasonic</td>
+                <td>Sẵn sàng</td>
+                <td><button onclick="chonThietBi('TB-001', 'Máy chiếu Panasonic')">Chọn mượn</button></td>
+            </tr>
+            <tr>
+                <td>TB-002</td>
+                <td>Cáp HDMI 5m</td>
+                <td>Sẵn sàng</td>
+                <td><button onclick="chonThietBi('TB-002', 'Cáp HDMI 5m')">Chọn mượn</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. Đăng ký mượn thiết bị</h2>
+    <form id="formMuon">
+        <p id="thongbao_muon" style="color:green;"></p>
+        <label>Thiết bị đang chọn:</label>
+        <input type="text" id="tb_duoc_chon" readonly>
+        
+        <label>Ngày hẹn trả:</label>
+        <input type="date" id="ngay_tra">
+        
+        <label>Mục đích mượn:</label>
+        <input type="text" id="muc_dich">
+        
+        <button type="button" onclick="guiYeuCau()">Gửi yêu cầu</button>
+    </form>
+
+    <script src="main.js"></script>
+</body>
+</html>

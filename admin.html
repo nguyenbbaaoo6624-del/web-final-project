@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao diện Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header-container">
+        <h1>TRANG QUẢN TRỊ VIÊN (ADMIN)</h1>
+        <a href="index.html"><button style="background-color: #e74c3c;">Đăng xuất</button></a>
+    </div>
+    <hr>
+    
+    <h2>1. Quản lý yêu cầu mượn (Chờ duyệt)</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Mã Phiếu</th>
+                <th>Người mượn</th>
+                <th>Thiết bị</th>
+                <th>Mục đích</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="ds_phieumuon">
+            <tr id="phieu_1">
+                <td>PM-101</td>
+                <td>Nguyễn Văn A</td>
+                <td>Máy chiếu Panasonic</td>
+                <td>Học nhóm</td>
+                <td>
+                    <button onclick="xuLyPhieu('phieu_1', 'Phê duyệt')" style="background-color: #2ecc71;">Phê duyệt</button>
+                    <button onclick="xuLyPhieu('phieu_1', 'Từ chối')" style="background-color: #e74c3c;">Từ chối</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. Quản lý kho thiết bị</h2>
+    <button onclick="alert('Mở form thêm thiết bị mới')">Thêm thiết bị mới</button>
+    <br><br>
+    <table>
+        <thead>
+            <tr>
+                <th>Mã TB</th>
+                <th>Tên Thiết bị</th>
+                <th>Tình trạng</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>TB-001</td>
+                <td>Máy chiếu Panasonic</td>
+                <td>Đang sử dụng</td>
+                <td>
+                    <button onclick="alert('Mở form cập nhật')">Sửa</button>
+                    <button onclick="alert('Xóa thiết bị này')" style="background-color: #e74c3c;">Xóa</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script src="main.js"></script>
+</body>
+</html>

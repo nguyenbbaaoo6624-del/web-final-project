@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký Tài khoản</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="login-wrapper">
+        <h2>Đăng ký Tài khoản Sinh viên / Giáo viên</h2>
+        <form id="registerForm">
+            <label>Tài khoản mới:</label>
+            <input type="text" id="reg_username" required>
+            
+            <label>Mật khẩu:</label>
+            <input type="password" id="reg_password" required>
+            
+            <label>Xác nhận mật khẩu:</label>
+            <input type="password" id="reg_confirm_password" required>
+            
+            <button type="button" onclick="xuLyDangKy()">Đăng ký</button>
+            
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="index.html">Đã có tài khoản? Quay lại Đăng nhập</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

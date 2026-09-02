@@ -4,7 +4,10 @@
 function xuLyDangNhap() {
     let u = document.getElementById('username').value;
     let p = document.getElementById('password').value;
-    let r = document.getElementById('role').value;
+    
+    // Thêm kiểm tra null cho role phòng trường hợp giao diện mới không sử dụng thẻ select này
+    let roleElement = document.getElementById('role');
+    let r = roleElement ? roleElement.value : null;
 
     if (u === "" || p === "") {
         alert("Vui lòng nhập đủ tài khoản và mật khẩu!");
@@ -19,16 +22,13 @@ function xuLyDangNhap() {
     .then(res => res.json())
     .then(data => {
         if (data.status === "success") {
-            // Đối chiếu role giao diện với role trong database
-            if (data.role !== r) {
+            if (r && data.role !== r) {
                 alert("Lỗi phân quyền: Tài khoản không có quyền đăng nhập vai trò này!");
                 return;
             }
-            // Lưu thông tin người dùng vào localStorage
+            
             localStorage.setItem("currentUser", u);
             localStorage.setItem("currentRole", data.role);
-
-            // Chuyển trang theo role
             window.location.href = data.role === 'sinhvien' ? 'sinhvien.html' : 'admin.html';
         } else {
             alert(data.message);
@@ -67,7 +67,8 @@ function xuLyDangKy() {
     .then(data => {
         alert(data.message);
         if (data.status === "success") {
-            window.location.href = 'index.html';
+            // Điều hướng về login.html thay vì index.html
+            window.location.href = 'login.html';
         }
     })
     .catch(error => {
@@ -89,13 +90,14 @@ function loadThietBi() {
             html = '<tr><td colspan="4" style="text-align:center;">Không có thiết bị nào</td></tr>';
         } else {
             data.forEach(tb => {
+                // Cập nhật cấu trúc nút bấm theo CSS của giao diện mới
                 html += `<tr>
                     <td>${tb.ma_tb}</td>
                     <td>${tb.ten_tb}</td>
                     <td>${tb.status}</td>
                     <td>
-                        <button onclick="chonThietBi('${tb.ma_tb}', '${tb.ten_tb}')">
-                            Chọn mượn
+                        <button onclick="chonThietBi('${tb.ma_tb}', '${tb.ten_tb}')" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">
+                            Chọn
                         </button>
                     </td>
                 </tr>`;
@@ -120,10 +122,10 @@ function guiYeuCau() {
     let ngayTra     = document.getElementById('ngay_tra').value;
     let mucDich     = document.getElementById('muc_dich').value;
 
-    // Kiểm tra đã đăng nhập chưa
     if (!currentUser) {
         alert("Bạn chưa đăng nhập!");
-        window.location.href = 'index.html';
+        // Điều hướng về login.html thay vì index.html
+        window.location.href = 'login.html';
         return;
     }
 
@@ -152,7 +154,7 @@ function guiYeuCau() {
         alert(data.message);
         if (data.status === "success") {
             document.getElementById('formMuon').reset();
-            loadThietBi();  // load lại danh sách sau khi gửi yêu cầu
+            loadThietBi();
         }
     })
     .catch(error => {
@@ -174,16 +176,16 @@ function loadPhieuMuon() {
             html = '<tr><td colspan="5" style="text-align:center;">Không có yêu cầu nào đang chờ duyệt</td></tr>';
         } else {
             data.forEach(phieu => {
+                // Cập nhật cấu trúc cột và class nút bấm theo thiết kế Admin Dashboard mới
                 html += `<tr id="phieu_${phieu.id}">
-                    <td>PM-${phieu.id}</td>
                     <td>${phieu.username}</td>
+                    <td>A1.1</td> <!-- Giá trị phòng giả lập vì CSDL chưa có trường này -->
                     <td>${phieu.ten_tb}</td>
-                    <td>${phieu.muc_dich}</td>
                     <td>
-                        <button onclick="xuLyPhieu(${phieu.id}, 'Đã duyệt')"
-                                style="background-color:#2ecc71;">Duyệt</button>
-                        <button onclick="xuLyPhieu(${phieu.id}, 'Từ chối')"
-                                style="background-color:#e74c3c;">Từ chối</button>
+                        <button onclick="xuLyPhieu(${phieu.id}, 'Đã duyệt')" class="btn-icon btn-approve">✔️</button>
+                    </td>
+                    <td>
+                        <button onclick="xuLyPhieu(${phieu.id}, 'Từ chối')" class="btn-icon btn-reject">❌</button>
                     </td>
                 </tr>`;
             });
@@ -206,7 +208,6 @@ function xuLyPhieu(idPhieu, hanhDong) {
     .then(data => {
         if (data.status === "success") {
             alert("Đã " + hanhDong + " yêu cầu PM-" + idPhieu);
-            // Ẩn hàng đó đi sau khi xử lý
             document.getElementById('phieu_' + idPhieu).style.display = 'none';
         } else {
             alert("Có lỗi xảy ra: " + data.message);

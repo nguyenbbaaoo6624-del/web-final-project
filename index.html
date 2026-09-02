@@ -1,36 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập Hệ thống</title>
+    <title>Quản lý Mượn thiết bị - Trang chủ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="login-wrapper">
-        <h2>Đăng nhập Hệ thống Quản lý Thiết bị</h2>
-        <form id="loginForm">
-            
-            <label>Tài khoản:</label>
-            <input type="text" id="username" required>
-            
-            <label>Mật khẩu:</label>
-            <input type="password" id="password" required>
-            
-            <label>Vai trò đăng nhập:</label>
-            <select id="role">
-                <option value="sinhvien">Sinh viên / Giáo viên</option>
-                <option value="admin">Quản trị viên (Admin)</option>
-            </select>
-            
-            <button type="button" onclick="xuLyDangNhap()">Đăng nhập</button>
-            
-            <div style="margin-top: 15px; text-align: center;">
-                <a href="register.html">Chưa có tài khoản? Đăng ký ngay</a>
-            </div>
-        </form>
-    </div>
+    <!-- Thanh điều hướng -->
+    <header class="navbar">
+        <div class="logo">
+            <h1 class="logo-highlight">USSH</h1>
+            <span class="logo-text">QUẢN LÝ MƯỢN THIẾT BỊ<br>PHÒNG HỌC</span>
+        </div>
+        <div class="search-bar">
+            <input type="text" placeholder="🔍 Tìm kiếm...">
+        </div>
+        <div class="auth-buttons">
+            <button class="btn-outline" onclick="window.location.href='login.html'">Đăng nhập</button>
+            <button class="btn-primary" onclick="window.location.href='register.html'">Đăng ký</button>
+        </div>
+    </header>
 
-    <script src="main.js"></script>
+    <!-- Banner chính -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>MƯỢN THIẾT BỊ PHÒNG HỌC<br>NHANH CHÓNG</h2>
+            <button class="btn-primary large-btn" onclick="window.location.href='login.html'">Tra cứu ngay</button>
+        </div>
+    </section>
+
+    <!-- Danh sách thiết bị phổ biến -->
+    <section class="popular-devices">
+        <h3>Thiết bị Phổ biến</h3>
+        <div class="device-grid">
+            <div class="device-card">
+                <div class="device-icon">📽️</div>
+                <div class="device-info">
+                    <h4>Máy chiếu</h4>
+                    <button class="btn-primary" onclick="window.location.href='login.html'">Đăng ký</button>
+                </div>
+            </div>
+            
+            <div class="device-card">
+                <div class="device-icon">💻</div>
+                <div class="device-info">
+                    <h4>Laptop</h4>
+                    <button class="btn-primary" onclick="window.location.href='login.html'">Đăng ký</button>
+                </div>
+            </div>
+
+            <div class="device-card">
+                <div class="device-icon">🎤</div>
+                <div class="device-info">
+                    <h4>Micro</h4>
+                    <button class="btn-primary" onclick="window.location.href='login.html'">Đăng ký</button>
+                </div>
+            </div>
+        </div>
+    </section>
 </body>
 </html>

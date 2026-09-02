@@ -1,67 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giao diện Admin</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="header-container">
-        <h1>TRANG QUẢN TRỊ VIÊN (ADMIN)</h1>
-        <a href="index.html"><button style="background-color: #e74c3c;">Đăng xuất</button></a>
-    </div>
-    <hr>
-    
-    <h2>1. Quản lý yêu cầu mượn (Chờ duyệt)</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Mã Phiếu</th>
-                <th>Người mượn</th>
-                <th>Thiết bị</th>
-                <th>Mục đích</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody id="ds_phieumuon">
-            <tr id="phieu_1">
-                <td>PM-101</td>
-                <td>Nguyễn Văn A</td>
-                <td>Máy chiếu Panasonic</td>
-                <td>Học nhóm</td>
-                <td>
-                    <button onclick="xuLyPhieu('phieu_1', 'Phê duyệt')" style="background-color: #2ecc71;">Phê duyệt</button>
-                    <button onclick="xuLyPhieu('phieu_1', 'Từ chối')" style="background-color: #e74c3c;">Từ chối</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<body class="dashboard-body">
+    <div class="dashboard-layout">
+        <!-- Thanh menu bên trái (Sidebar) -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">USSH</div>
+            <div class="sidebar-user">
+                <div class="avatar">👨‍💼</div>
+                <div class="user-info">
+                    <strong>Nguyễn Văn A</strong>
+                    <span>Quản trị viên</span>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active">Bảng điều khiển</li>
+                <li>Quản lý Yêu cầu</li>
+                <li>Phòng & Thiết bị</li>
+                <li>Người dùng</li>
+                <li>Báo cáo</li>
+            </ul>
+        </aside>
 
-    <h2>2. Quản lý kho thiết bị</h2>
-    <button onclick="alert('Mở form thêm thiết bị mới')">Thêm thiết bị mới</button>
-    <br><br>
-    <table>
-        <thead>
-            <tr>
-                <th>Mã TB</th>
-                <th>Tên Thiết bị</th>
-                <th>Tình trạng</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>TB-001</td>
-                <td>Máy chiếu Panasonic</td>
-                <td>Đang sử dụng</td>
-                <td>
-                    <button onclick="alert('Mở form cập nhật')">Sửa</button>
-                    <button onclick="alert('Xóa thiết bị này')" style="background-color: #e74c3c;">Xóa</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+        <!-- Nội dung chính (Main Content) -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2>Quản trị Hệ thống</h2>
+                <div class="topbar-actions">
+                    <input type="text" placeholder="🔍 Tìm kiếm..." class="search-input">
+                    <button class="btn-logout" onclick="window.location.href='login.html'">Đăng xuất</button>
+                </div>
+            </header>
+
+            <!-- 4 Thẻ số liệu tổng quan -->
+            <div class="stats-grid">
+                <div class="stat-card bg-blue">
+                    <p>Yêu cầu Chờ Duyệt</p>
+                    <h3>13</h3>
+                </div>
+                <div class="stat-card bg-green">
+                    <p>Tổng Thiết bị</p>
+                    <h3>789</h3>
+                </div>
+                <div class="stat-card bg-red">
+                    <p>Thiết bị Hỏng</p>
+                    <h3>1</h3>
+                </div>
+                <div class="stat-card bg-yellow">
+                    <p>Tổng Người dùng</p>
+                    <h3>23</h3>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <!-- Cột trái: Biểu đồ (Tạm thời dùng khối div thay thế) -->
+                <div class="chart-section">
+                    <h3>Tần suất mượn theo tuần</h3>
+                    <div class="chart-placeholder">
+                        <div class="bar" style="height: 20%;"></div>
+                        <div class="bar" style="height: 50%;"></div>
+                        <div class="bar" style="height: 100%;"></div>
+                        <div class="bar" style="height: 40%;"></div>
+                        <div class="bar" style="height: 30%;"></div>
+                        <div class="bar" style="height: 20%;"></div>
+                    </div>
+                </div>
+
+                <!-- Cột phải: Bảng yêu cầu -->
+                <div class="table-section">
+                    <h3>Yêu cầu Cần Duyệt Gấp</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Người mượn</th>
+                                <th>Phòng</th>
+                                <th>Thiết bị</th>
+                                <th>Duyệt</th>
+                                <th>Từ chối</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ds_phieumuon">
+                            <tr id="phieu_1">
+                                <td>Nguyễn Văn A</td>
+                                <td>A1.1</td>
+                                <td>Máy chiếu</td>
+                                <td><button onclick="xuLyPhieu('phieu_1', 'Phê duyệt')" class="btn-icon btn-approve">✔️</button></td>
+                                <td><button onclick="xuLyPhieu('phieu_1', 'Từ chối')" class="btn-icon btn-reject">❌</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script src="main.js"></script>
 </body>

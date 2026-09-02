@@ -2,28 +2,39 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng ký Tài khoản</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="login-wrapper">
-        <h2>Đăng ký Tài khoản Sinh viên / Giáo viên</h2>
-        <form id="registerForm">
-            <label>Tài khoản mới:</label>
-            <input type="text" id="reg_username" required>
-            
-            <label>Mật khẩu:</label>
-            <input type="password" id="reg_password" required>
-            
-            <label>Xác nhận mật khẩu:</label>
-            <input type="password" id="reg_confirm_password" required>
-            
-            <button type="button" onclick="xuLyDangKy()">Đăng ký</button>
-            
-            <div style="margin-top: 15px; text-align: center;">
-                <a href="index.html">Đã có tài khoản? Quay lại Đăng nhập</a>
+<body class="auth-body">
+    <div class="auth-container">
+        <!-- Cột trái: Banner -->
+        <div class="auth-banner">
+            <h1 class="auth-logo">USSH</h1>
+            <h2>Bạn chưa có tài khoản mượn thiết bị trường NTTU ?</h2>
+            <h3>Tạo tài khoản mới</h3>
+        </div>
+
+        <!-- Cột phải: Form Đăng ký -->
+        <div class="auth-form-section">
+            <div class="auth-tabs">
+                <a href="login.html" class="tab">Đăng Nhập</a>
+                <a href="register.html" class="tab active">Đăng Ký</a>
             </div>
-        </form>
+            
+            <form id="registerForm" class="auth-form">
+                <label>Tài khoản mới:</label>
+                <input type="text" id="reg_username" required>
+                
+                <label>Mật khẩu:</label>
+                <input type="password" id="reg_password" required>
+                
+                <label>Xác nhận mật khẩu:</label>
+                <input type="password" id="reg_confirm_password" required>
+                
+                <button type="button" onclick="xuLyDangKy()" class="btn-primary auth-btn">Đăng ký</button>
+            </form>
+        </div>
     </div>
 
     <script src="main.js"></script>

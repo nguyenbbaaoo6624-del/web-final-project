@@ -1,58 +1,132 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giao diện Người mượn</title>
+    <title>Giao diện Sinh viên</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="header-container">
-        <h1>TRANG SINH VIÊN / GIÁO VIÊN</h1>
-        <a href="index.html"><button style="background-color: #e74c3c;">Đăng xuất</button></a>
-    </div>
-    <hr>
-    
-    <h2>1. Danh mục thiết bị khả dụng</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Mã TB</th>
-                <th>Tên Thiết bị</th>
-                <th>Tình trạng</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody id="ds_thietbi">
-            <tr>
-                <td>TB-001</td>
-                <td>Máy chiếu Panasonic</td>
-                <td>Sẵn sàng</td>
-                <td><button onclick="chonThietBi('TB-001', 'Máy chiếu Panasonic')">Chọn mượn</button></td>
-            </tr>
-            <tr>
-                <td>TB-002</td>
-                <td>Cáp HDMI 5m</td>
-                <td>Sẵn sàng</td>
-                <td><button onclick="chonThietBi('TB-002', 'Cáp HDMI 5m')">Chọn mượn</button></td>
-            </tr>
-        </tbody>
-    </table>
+<body class="dashboard-body">
+    <div class="dashboard-layout">
+        <!-- Thanh menu bên trái (Sidebar) -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">USSH</div>
+            <div class="sidebar-user">
+                <div class="avatar">👨‍🎓</div>
+                <div class="user-info">
+                    <strong>Nguyễn Văn B</strong>
+                    <span>Sinh viên</span>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active">Bảng điều khiển</li>
+                <li>Mượn thiết bị mới</li>
+                <li>Lịch sử mượn</li>
+                <li>Thông báo</li>
+            </ul>
+        </aside>
 
-    <h2>2. Đăng ký mượn thiết bị</h2>
-    <form id="formMuon">
-        <p id="thongbao_muon" style="color:green;"></p>
-        <label>Thiết bị đang chọn:</label>
-        <input type="text" id="tb_duoc_chon" readonly>
-        
-        <label>Ngày hẹn trả:</label>
-        <input type="date" id="ngay_tra">
-        
-        <label>Mục đích mượn:</label>
-        <input type="text" id="muc_dich">
-        
-        <button type="button" onclick="guiYeuCau()">Gửi yêu cầu</button>
-    </form>
+        <!-- Nội dung chính (Main Content) -->
+        <main class="main-content">
+            <header class="topbar">
+                <h2>Chào mừng, B!</h2>
+                <div class="topbar-actions">
+                    <input type="text" placeholder="🔍 Tìm kiếm..." class="search-input">
+                    <button class="btn-logout" onclick="window.location.href='login.html'">Đăng xuất</button>
+                </div>
+            </header>
+
+            <!-- 3 Thẻ số liệu tổng quan của Sinh viên -->
+            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="stat-card bg-blue">
+                    <p>Yêu cầu Đang chờ</p>
+                    <h3>2</h3>
+                </div>
+                <div class="stat-card bg-green">
+                    <p>Thiết bị Đang mượn</p>
+                    <h3>1</h3>
+                </div>
+                <div class="stat-card bg-yellow">
+                    <p>Cần trả hôm nay</p>
+                    <h3>0</h3>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <!-- Cột trái: Danh sách thiết bị và Form đăng ký mượn -->
+                <div class="table-section">
+                    <h3>1. Danh mục thiết bị khả dụng</h3>
+                    <table class="data-table" style="margin-bottom: 30px;">
+                        <thead>
+                            <tr>
+                                <th>Mã TB</th>
+                                <th>Tên Thiết bị</th>
+                                <th>Tình trạng</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ds_thietbi">
+                            <tr>
+                                <td>TB-001</td>
+                                <td>Máy chiếu Panasonic</td>
+                                <td>Sẵn sàng</td>
+                                <td><button onclick="chonThietBi('TB-001', 'Máy chiếu Panasonic')" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Chọn</button></td>
+                            </tr>
+                            <tr>
+                                <td>TB-002</td>
+                                <td>Cáp HDMI 5m</td>
+                                <td>Sẵn sàng</td>
+                                <td><button onclick="chonThietBi('TB-002', 'Cáp HDMI 5m')" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Chọn</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>2. Đăng ký mượn thiết bị</h3>
+                    <form id="formMuon">
+                        <label>Thiết bị đang chọn:</label>
+                        <input type="text" id="tb_duoc_chon" readonly style="background-color: #f5f6fa; border: 1px solid #ddd;">
+                        
+                        <label>Ngày hẹn trả:</label>
+                        <input type="date" id="ngay_tra" style="border: 1px solid #ddd;">
+                        
+                        <label>Mục đích mượn:</label>
+                        <input type="text" id="muc_dich" style="border: 1px solid #ddd;">
+                        
+                        <button type="button" onclick="guiYeuCau()" class="btn-primary" style="width: 100%; margin-top: 10px;">Gửi yêu cầu</button>
+                    </form>
+                </div>
+
+                <!-- Cột phải: Lịch sử mượn gần đây (Hiển thị tĩnh theo thiết kế) -->
+                <div class="table-section">
+                    <h3>Danh sách Mượn Gần đây</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID Mượn</th>
+                                <th>Thiết bị</th>
+                                <th>Ngày mượn</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ID-0018001</td>
+                                <td>Máy chiếu</td>
+                                <td>13/07/2026</td>
+                                <td><span style="color: #f39c12; font-weight: bold;">Đang chờ</span></td>
+                            </tr>
+                            <tr>
+                                <td>ID-0018002</td>
+                                <td>Laptop Dell</td>
+                                <td>10/07/2026</td>
+                                <td><span style="color: #2ecc71; font-weight: bold;">Đã duyệt</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script src="main.js"></script>
 </body>

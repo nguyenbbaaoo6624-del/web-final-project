@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Hệ thống</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body">
+    <div class="auth-container">
+        <!-- Cột trái: Banner -->
+        <div class="auth-banner">
+            <h1 class="auth-logo">USSH</h1>
+            <h2>Chào mừng<br>bạn trở lại !</h2>
+            <h3>Đăng nhập hệ thống</h3>
+        </div>
+
+        <!-- Cột phải: Form Đăng nhập -->
+        <div class="auth-form-section">
+            <div class="auth-tabs">
+                <a href="login.html" class="tab active">Đăng Nhập</a>
+                <a href="register.html" class="tab">Đăng Ký</a>
+            </div>
+            
+            <form id="loginForm" class="auth-form">
+                <label>Tài khoản:</label>
+                <input type="text" id="username" required>
+                
+                <label>Mật khẩu:</label>
+                <input type="password" id="password" required>
+                
+                <label>Vai trò đăng nhập:</label>
+                <select id="role">
+                    <option value="sinhvien">Sinh viên / Giáo viên</option>
+                    <option value="admin">Quản trị viên (Admin)</option>
+                </select>
+                
+                <button type="button" onclick="xuLyDangNhap()" class="btn-primary auth-btn">Đăng nhập</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

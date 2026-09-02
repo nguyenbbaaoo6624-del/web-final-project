@@ -14,120 +14,174 @@
             <div class="sidebar-user">
                 <div class="avatar">👨‍🎓</div>
                 <div class="user-info">
-                    <strong>Nguyễn Văn B</strong>
+                    <strong id="user_fullname">Nguyễn Văn B</strong>
                     <span>Sinh viên</span>
                 </div>
             </div>
             <ul class="sidebar-menu">
-                <li class="active">Bảng điều khiển</li>
-                <li>Mượn thiết bị mới</li>
-                <li>Lịch sử mượn</li>
-                <li>Thông báo</li>
+                <li class="active" onclick="chuyenTab('dashboard', this)">Bảng điều khiển</li>
+                <li onclick="chuyenTab('history', this)">Lịch sử mượn</li>
+                <li onclick="chuyenTab('report', this)">Báo hỏng thiết bị</li>
+                <li onclick="chuyenTab('notification', this)">Thông báo</li>
             </ul>
         </aside>
 
         <!-- Nội dung chính (Main Content) -->
         <main class="main-content">
             <header class="topbar">
-                <h2>Chào mừng, B!</h2>
+                <h2 id="welcome_text">Chào mừng, B!</h2>
                 <div class="topbar-actions">
                     <input type="text" placeholder="🔍 Tìm kiếm..." class="search-input">
-                    <button class="btn-logout" onclick="window.location.href='login.html'">Đăng xuất</button>
+                    <button class="btn-logout" onclick="window.location.href='login.html'" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">Đăng xuất</button>
                 </div>
             </header>
 
-            <!-- 3 Thẻ số liệu tổng quan của Sinh viên -->
-            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="stat-card bg-blue">
-                    <p>Yêu cầu Đang chờ</p>
-                    <h3>2</h3>
+            <!-- ================= TAB 1: BẢNG ĐIỀU KHIỂN ================= -->
+            <div id="tab-dashboard" class="tab-content" style="display: block;">
+                <!-- 3 Thẻ số liệu tổng quan -->
+                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="stat-card bg-blue">
+                        <p>Yêu cầu Đang chờ</p>
+                        <h3 id="stat_dangcho">0</h3>
+                    </div>
+                    <div class="stat-card bg-green">
+                        <p>Thiết bị Đang mượn</p>
+                        <h3 id="stat_dangmuon">0</h3>
+                    </div>
+                    <div class="stat-card bg-yellow">
+                        <p>Cần trả hôm nay</p>
+                        <h3 id="stat_cantra">0</h3>
+                    </div>
                 </div>
-                <div class="stat-card bg-green">
-                    <p>Thiết bị Đang mượn</p>
-                    <h3>1</h3>
-                </div>
-                <div class="stat-card bg-yellow">
-                    <p>Cần trả hôm nay</p>
-                    <h3>0</h3>
+
+                <div class="content-grid">
+                    <!-- Cột trái: Danh sách thiết bị & Form đăng ký -->
+                    <div class="table-section">
+                        <h3>1. Danh mục thiết bị khả dụng</h3>
+                        <table class="data-table" style="margin-bottom: 30px;">
+                            <thead>
+                                <tr>
+                                    <th>Mã TB</th>
+                                    <th>Tên Thiết bị</th>
+                                    <th>Tình trạng</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ds_thietbi">
+                                <!-- Dữ liệu render từ JS -->
+                            </tbody>
+                        </table>
+
+                        <h3>2. Đăng ký mượn thiết bị</h3>
+                        <form id="formMuon">
+                         <label>Thiết bị đang chọn:</label>
+                         <input type="text" id="tb_duoc_chon" readonly style="background-color: #f5f6fa; border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+    
+                         <label>Phòng học (1-30):</label>
+                         <input type="number" id="phong_hoc" min="1" max="30" placeholder="Ví dụ: 15" style="border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+
+                         <label>Ngày hẹn trả:</label>
+                         <input type="date" id="ngay_tra" style="border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+    
+                         <label>Mục đích mượn cụ thể:</label>
+                         <input type="text" id="muc_dich" placeholder="Ví dụ: Thuyết trình môn Triết" style="border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+    
+                         <button type="button" onclick="guiYeuCau()" class="btn-primary" style="width: 100%; padding: 12px; border-radius: 5px;">Gửi yêu cầu</button>
+                        </form>
+                    </div>
+
+                    <!-- Cột phải: Lịch sử mượn gần đây -->
+                    <div class="table-section">
+                        <h3>Danh sách Mượn Gần đây</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Mượn</th>
+                                    <th>Thiết bị</th>
+                                    <th>Ngày mượn</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ds_lichsu_ganday">
+                                <!-- Dữ liệu render từ JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <div class="content-grid">
-                <!-- Cột trái: Danh sách thiết bị và Form đăng ký mượn -->
+            <!-- ================= TAB 2: LỊCH SỬ MƯỢN ================= -->
+            <div id="tab-history" class="tab-content" style="display: none;">
                 <div class="table-section">
-                    <h3>1. Danh mục thiết bị khả dụng</h3>
-                    <table class="data-table" style="margin-bottom: 30px;">
-                        <thead>
-                            <tr>
-                                <th>Mã TB</th>
-                                <th>Tên Thiết bị</th>
-                                <th>Tình trạng</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ds_thietbi">
-                            <tr>
-                                <td>TB-001</td>
-                                <td>Máy chiếu Panasonic</td>
-                                <td>Sẵn sàng</td>
-                                <td><button onclick="chonThietBi('TB-001', 'Máy chiếu Panasonic')" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Chọn</button></td>
-                            </tr>
-                            <tr>
-                                <td>TB-002</td>
-                                <td>Cáp HDMI 5m</td>
-                                <td>Sẵn sàng</td>
-                                <td><button onclick="chonThietBi('TB-002', 'Cáp HDMI 5m')" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Chọn</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h3>2. Đăng ký mượn thiết bị</h3>
-                    <form id="formMuon">
-                        <label>Thiết bị đang chọn:</label>
-                        <input type="text" id="tb_duoc_chon" readonly style="background-color: #f5f6fa; border: 1px solid #ddd;">
-                        
-                        <label>Ngày hẹn trả:</label>
-                        <input type="date" id="ngay_tra" style="border: 1px solid #ddd;">
-                        
-                        <label>Mục đích mượn:</label>
-                        <input type="text" id="muc_dich" style="border: 1px solid #ddd;">
-                        
-                        <button type="button" onclick="guiYeuCau()" class="btn-primary" style="width: 100%; margin-top: 10px;">Gửi yêu cầu</button>
-                    </form>
-                </div>
-
-                <!-- Cột phải: Lịch sử mượn gần đây (Hiển thị tĩnh theo thiết kế) -->
-                <div class="table-section">
-                    <h3>Danh sách Mượn Gần đây</h3>
+                    <h3>Toàn bộ Lịch sử mượn thiết bị</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID Mượn</th>
-                                <th>Thiết bị</th>
+                                <th>Mã Phiếu</th>
+                                <th>Tên Thiết bị</th>
                                 <th>Ngày mượn</th>
+                                <th>Ngày hẹn trả</th>
                                 <th>Trạng thái</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>ID-0018001</td>
-                                <td>Máy chiếu</td>
-                                <td>13/07/2026</td>
-                                <td><span style="color: #f39c12; font-weight: bold;">Đang chờ</span></td>
-                            </tr>
-                            <tr>
-                                <td>ID-0018002</td>
-                                <td>Laptop Dell</td>
-                                <td>10/07/2026</td>
-                                <td><span style="color: #2ecc71; font-weight: bold;">Đã duyệt</span></td>
-                            </tr>
+                        <tbody id="ds_lichsu_toanbo">
+                            <!-- Dữ liệu render từ JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- ================= TAB 3: BÁO HỎNG THIẾT BỊ ================= -->
+            <div id="tab-report" class="tab-content" style="display: none;">
+                <div class="table-section" style="max-width: 600px;">
+                    <h3>Gửi báo cáo thiết bị hỏng</h3>
+                    <form id="formBaoHong">
+                        <label>Chọn thiết bị gặp sự cố (Đang mượn):</label>
+                        <select id="thietbi_hong" style="width: 100%; padding: 10px; border: 1px solid #ddd; margin-bottom: 15px; border-radius: 5px; background-color: #f5f6fa;">
+                            <option value="">-- Chọn thiết bị --</option>
+                            <!-- Tùy chọn sẽ được nạp bằng JS -->
+                        </select>
+
+                        <label>Mô tả chi tiết tình trạng hỏng hóc:</label>
+                        <textarea id="mota_hong" rows="5" placeholder="Ví dụ: Máy chiếu không lên nguồn, cáp đứt ngầm..." style="width: 100%; padding: 10px; border: 1px solid #ddd; margin-bottom: 15px; border-radius: 5px; resize: vertical;"></textarea>
+                        
+                        <button type="button" onclick="guiBaoHong()" class="btn-primary" style="background-color: #e74c3c; border-color: #e74c3c; padding: 12px 25px; border-radius: 5px;">Gửi báo cáo hỏng</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ================= TAB 4: THÔNG BÁO ================= -->
+            <div id="tab-notification" class="tab-content" style="display: none;">
+                <div class="table-section">
+                    <h3>Thông báo từ Quản trị viên</h3>
+                    <ul id="ds_thongbao" style="list-style: none; padding: 0; margin: 0;">
+                        <!-- Dữ liệu render từ JS -->
+                        <li style="padding: 15px; border-bottom: 1px solid #eee; color: #7f8c8d; text-align: center;">Hiện chưa có thông báo mới nào.</li>
+                    </ul>
+                </div>
+            </div>
+
         </main>
     </div>
 
+    <!-- Script xử lý giao diện chuyển Tab -->
+    <script>
+        function chuyenTab(tabId, element) {
+            // Ẩn tất cả các khối nội dung tab
+            let contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.style.display = 'none');
+            
+            // Hiển thị tab được chọn
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            
+            // Xóa class active ở tất cả các thẻ li trong menu
+            let menus = document.querySelectorAll('.sidebar-menu li');
+            menus.forEach(menu => menu.classList.remove('active'));
+            
+            // Gán class active cho thẻ li vừa được click
+            element.classList.add('active');
+        }
+    </script>
     <script src="main.js"></script>
 </body>
 </html>

@@ -8,97 +8,184 @@
 </head>
 <body class="dashboard-body">
     <div class="dashboard-layout">
-        <!-- Thanh menu bên trái (Sidebar) -->
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-logo">USSH</div>
             <div class="sidebar-user">
                 <div class="avatar">👨‍💼</div>
                 <div class="user-info">
-                    <strong>Nguyễn Văn A</strong>
+                    <strong id="admin_fullname">Admin</strong>
                     <span>Quản trị viên</span>
                 </div>
             </div>
             <ul class="sidebar-menu">
-                <li class="active">Bảng điều khiển</li>
-                <li>Quản lý Yêu cầu</li>
-                <li>Phòng & Thiết bị</li>
-                <li>Người dùng</li>
-                <li>Báo cáo</li>
+                <li class="active" onclick="chuyenTab('dashboard', this)">Bảng điều khiển</li>
+                <li onclick="chuyenTab('requests', this)">Quản lý Yêu cầu</li>
+                <li onclick="chuyenTab('equipments', this)">Phòng & Thiết bị</li>
+                <li onclick="chuyenTab('users', this)">Người dùng</li>
+                <li onclick="chuyenTab('reports', this)">Báo cáo</li>
             </ul>
         </aside>
 
-        <!-- Nội dung chính (Main Content) -->
+        <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
                 <h2>Quản trị Hệ thống</h2>
                 <div class="topbar-actions">
                     <input type="text" placeholder="🔍 Tìm kiếm..." class="search-input">
-                    <button class="btn-logout" onclick="window.location.href='login.html'">Đăng xuất</button>
+                    <button class="btn-logout" onclick="window.location.href='login.html'" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">Đăng xuất</button>
                 </div>
             </header>
 
-            <!-- 4 Thẻ số liệu tổng quan -->
-            <div class="stats-grid">
-                <div class="stat-card bg-blue">
-                    <p>Yêu cầu Chờ Duyệt</p>
-                    <h3>13</h3>
-                </div>
-                <div class="stat-card bg-green">
-                    <p>Tổng Thiết bị</p>
-                    <h3>789</h3>
-                </div>
-                <div class="stat-card bg-red">
-                    <p>Thiết bị Hỏng</p>
-                    <h3>1</h3>
-                </div>
-                <div class="stat-card bg-yellow">
-                    <p>Tổng Người dùng</p>
-                    <h3>23</h3>
-                </div>
-            </div>
-
-            <div class="content-grid">
-                <!-- Cột trái: Biểu đồ (Tạm thời dùng khối div thay thế) -->
-                <div class="chart-section">
-                    <h3>Tần suất mượn theo tuần</h3>
-                    <div class="chart-placeholder">
-                        <div class="bar" style="height: 20%;"></div>
-                        <div class="bar" style="height: 50%;"></div>
-                        <div class="bar" style="height: 100%;"></div>
-                        <div class="bar" style="height: 40%;"></div>
-                        <div class="bar" style="height: 30%;"></div>
-                        <div class="bar" style="height: 20%;"></div>
+            <!-- TAB 1: BẢNG ĐIỀU KHIỂN -->
+            <div id="tab-dashboard" class="tab-content" style="display: block;">
+                <div class="stats-grid">
+                    <div class="stat-card bg-blue">
+                        <p>Yêu cầu Chờ Duyệt</p>
+                        <h3 id="stat_admin_cho">0</h3>
+                    </div>
+                    <div class="stat-card bg-green">
+                        <p>Tổng Thiết bị</p>
+                        <h3 id="stat_admin_tongtb">0</h3>
+                    </div>
+                    <div class="stat-card bg-red">
+                        <p>Thiết bị Hỏng</p>
+                        <h3 id="stat_admin_hong">0</h3>
+                    </div>
+                    <div class="stat-card bg-yellow">
+                        <p>Tổng Người dùng</p>
+                        <h3 id="stat_admin_user">0</h3>
                     </div>
                 </div>
 
-                <!-- Cột phải: Bảng yêu cầu -->
+                <div class="content-grid">
+                    <!-- Biểu đồ (Báo cáo nhanh) -->
+                    <div class="chart-section">
+                        <h3>Tần suất mượn theo tuần</h3>
+                        <div class="chart-placeholder">
+                            <div class="bar" style="height: 20%;"></div>
+                            <div class="bar" style="height: 50%;"></div>
+                            <div class="bar" style="height: 100%;"></div>
+                            <div class="bar" style="height: 40%;"></div>
+                            <div class="bar" style="height: 30%;"></div>
+                            <div class="bar" style="height: 20%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bảng yêu cầu -->
+                    <div class="table-section">
+                        <h3>Yêu cầu Cần Duyệt Gấp</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Người mượn</th>
+                                    <th>Thiết bị</th>
+                                    <th>Mục đích</th>
+                                    <th>Duyệt</th>
+                                    <th>Từ chối</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ds_phieumuon_dashboard">
+                                <!-- Dữ liệu từ JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: QUẢN LÝ YÊU CẦU -->
+            <div id="tab-requests" class="tab-content" style="display: none;">
                 <div class="table-section">
-                    <h3>Yêu cầu Cần Duyệt Gấp</h3>
+                    <h3>Toàn bộ Yêu cầu Mượn</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Người mượn</th>
-                                <th>Phòng</th>
                                 <th>Thiết bị</th>
-                                <th>Duyệt</th>
-                                <th>Từ chối</th>
+                                <th>Mục đích</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody id="ds_phieumuon">
-                            <tr id="phieu_1">
-                                <td>Nguyễn Văn A</td>
-                                <td>A1.1</td>
-                                <td>Máy chiếu</td>
-                                <td><button onclick="xuLyPhieu('phieu_1', 'Phê duyệt')" class="btn-icon btn-approve">✔️</button></td>
-                                <td><button onclick="xuLyPhieu('phieu_1', 'Từ chối')" class="btn-icon btn-reject">❌</button></td>
-                            </tr>
+                        <tbody id="ds_phieumuon_full">
+                            <!-- Dữ liệu từ JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- TAB 3: PHÒNG & THIẾT BỊ -->
+            <div id="tab-equipments" class="tab-content" style="display: none;">
+                <div class="table-section">
+                    <h3>Danh mục Thiết bị tiêu chuẩn</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã TB</th>
+                                <th>Tên Thiết bị</th>
+                                <th>Số lượng tổng</th>
+                                <th>Tình trạng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ds_thietbi_admin">
+                            <!-- Nạp từ JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: NGƯỜI DÙNG -->
+            <div id="tab-users" class="tab-content" style="display: none;">
+                <div class="table-section">
+                    <h3>Tài khoản Hệ thống</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tên tài khoản</th>
+                                <th>Phân quyền</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ds_nguoidung">
+                            <!-- Nạp từ JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 5: BÁO CÁO -->
+            <div id="tab-reports" class="tab-content" style="display: none;">
+                <div class="table-section">
+                    <h3>Ghi nhận Báo hỏng từ Sinh viên</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Người báo</th>
+                                <th>Thiết bị</th>
+                                <th>Mô tả lỗi</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ds_baohong">
+                            <!-- Nạp từ JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
         </main>
     </div>
 
+    <script>
+        function chuyenTab(tabId, element) {
+            let contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.style.display = 'none');
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            let menus = document.querySelectorAll('.sidebar-menu li');
+            menus.forEach(menu => menu.classList.remove('active'));
+            element.classList.add('active');
+        }
+    </script>
     <script src="main.js"></script>
 </body>
 </html>

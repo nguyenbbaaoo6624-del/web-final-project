@@ -3,12 +3,15 @@ header('Content-Type: application/json; charset=utf-8');
 require 'db.php';
 
 $data = json_decode(file_get_contents("php://input"));
-$id = $data->id;
-$action = $data->action;
-$ly_do = isset($data->ly_do) ? $data->ly_do : '';
+$username = $data->username;
 
-$sql = "UPDATE borrow_logs SET status='$action', ly_do_tu_choi='$ly_do' WHERE id=$id";
+// Không cho phép xóa tài khoản admin gốc đang đăng nhập
+if ($username === 'admin') {
+    echo json_encode(["status" => "error", "message" => "Không thể xóa tài khoản Admin gốc!"]);
+    exit;
+}
 
+$sql = "DELETE FROM users WHERE username='$username'";
 if (mysqli_query($conn, $sql)) {
     echo json_encode(["status" => "success"]);
 } else {

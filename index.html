@@ -6,57 +6,29 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Thanh điều hướng -->
     <header class="navbar">
         <div class="logo">
-            <h1 class="logo-highlight">USSH</h1>
+            <h1 class="logo-highlight">NIIE</h1>
             <span class="logo-text">QUẢN LÝ MƯỢN THIẾT BỊ<br>PHÒNG HỌC</span>
         </div>
-        <div class="search-bar">
-            <input type="text" placeholder="🔍 Tìm kiếm...">
-        </div>
-        <div class="auth-buttons">
+        
+        <div class="auth-buttons" id="auth_section">
             <button class="btn-outline" onclick="window.location.href='login.html'">Đăng nhập</button>
             <button class="btn-primary" onclick="window.location.href='register.html'">Đăng ký</button>
         </div>
     </header>
 
-    <!-- Banner chính -->
     <section class="hero">
         <div class="hero-content">
             <h2>MƯỢN THIẾT BỊ PHÒNG HỌC<br>NHANH CHÓNG</h2>
-            <button class="btn-primary large-btn" onclick="window.location.href='login.html'">Tra cứu ngay</button>
+            <button class="btn-primary large-btn" id="btn_hero_action" onclick="window.location.href='login.html'">Mượn thiết bị nhanh chóng</button>
         </div>
     </section>
 
-    <!-- Danh sách thiết bị phổ biến -->
-    <section class="popular-devices">
-        <h3>Thiết bị Phổ biến</h3>
-        <div class="device-grid">
-            <div class="device-card">
-                <div class="device-icon">📽️</div>
-                <div class="device-info">
-                    <h4>Máy chiếu</h4>
-                    <button class="btn-primary" onclick="window.location.href='login.html'">Đăng ký</button>
-                </div>
-            </div>
-            
-            <div class="device-card">
-                <div class="device-icon">💻</div>
-                <div class="device-info">
-                    <h4>Laptop</h4>
-                    <button class="btn-primary" onclick="window.location.href='login.html'">Đăng ký</button>
-                </div>
-            </div>
-
-            <div class="device-card">
-                <div class="device-icon">🎤</div>
-                <div class="device-info">
-                    <h4>Micro</h4>
-                    <button class="btn-primary" onclick="window.location.href='login.html'">Đăng ký</button>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div id="ds_thietbi_trangchu" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; padding-bottom: 40px;">
+        <!-- Dữ liệu render từ JS -->
+    </div>
+    
+    <script src="main.js"></script>
 </body>
 </html>

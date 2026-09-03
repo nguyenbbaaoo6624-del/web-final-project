@@ -190,8 +190,11 @@ function loadDuLieuSinhVien() {
                 </tr>`;
                 
                 if(p.status !== 'Pending') {
+                    // Xử lý chuỗi hiển thị lý do nếu bị từ chối
+                    let lyDoText = (p.status === 'Từ chối' && p.ly_do_tu_choi) ? `<br><span style="color: #e74c3c; font-size: 13px;">Phản hồi từ Admin: <b>${p.ly_do_tu_choi}</b></span>` : '';
+                    
                     htmlNoti += `<li style="padding: 15px; border-bottom: 1px solid #eee;">
-                        Yêu cầu mượn <b>${p.ten_tb}</b> của bạn đã bị <b>${p.status}</b> bởi Admin.
+                        Yêu cầu mượn <b>${p.ten_tb}</b> của bạn đã bị <b>${p.status}</b>. ${lyDoText}
                     </li>`;
                 }
             });
@@ -247,6 +250,9 @@ function loadPhieuMuon() {
             let htmlDash = '';
             let htmlFull = '';
             let countChoDuyet = 0;
+            
+            // Khởi tạo mảng đếm số lượng mượn theo ngày (0: CN, 1: T2, 2: T3...)
+            let weekCounts = [0, 0, 0, 0, 0, 0, 0]; 
 
             if (!Array.isArray(data) || data.length === 0) {
                 htmlDash = '<tr><td colspan="5" style="text-align:center;">Không có yêu cầu nào</td></tr>';
@@ -255,6 +261,12 @@ function loadPhieuMuon() {
                 data.forEach(phieu => {
                     let mucDich = phieu.muc_dich ? phieu.muc_dich : 'Không có';
                     
+                    // Phân tích tần suất thực tế theo ngày
+                    if (phieu.ngay_tra) {
+                        let d = new Date(phieu.ngay_tra);
+                        if (!isNaN(d.getTime())) weekCounts[d.getDay()]++;
+                    }
+
                     if(phieu.status === "Pending") {
                         countChoDuyet++;
                         htmlDash += `<tr id="phieu_dash_${phieu.id}">
@@ -285,6 +297,35 @@ function loadPhieuMuon() {
             if(fullElement) fullElement.innerHTML = htmlFull;
             if(statChoElement) statChoElement.innerText = countChoDuyet;
 
+            // Render lại biểu đồ bằng dữ liệu thực
+            let maxCount = Math.max(...weekCounts);
+            if (maxCount === 0) maxCount = 1;
+            
+            let chartHtml = '';
+            const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            
+            // Xếp thứ tự biểu đồ từ Thứ 2 đến Chủ nhật
+            for(let i = 1; i <= 7; i++) {
+                let dayIndex = i % 7; 
+                let height = (weekCounts[dayIndex] / maxCount) * 100;
+                chartHtml += `
+                <div style="display: flex; flex-direction: column; align-items: center; width: 12%;">
+                    <div style="height: 150px; width: 100%; display: flex; align-items: flex-end; margin-bottom: 10px;">
+                        <div class="bar" style="height: ${height}%; width: 100%; background-color: #3498db; border-radius: 3px 3px 0 0;"></div>
+                    </div>
+                    <span style="font-size: 12px; color: #7f8c8d; font-weight: bold;">${days[dayIndex]}</span>
+                    <span style="font-size: 13px; color: #2c3e50;">${weekCounts[dayIndex]}</span>
+                </div>`;
+            }
+            
+            let chartContainer = document.querySelector('.chart-placeholder');
+            if(chartContainer) {
+                chartContainer.style.display = 'flex';
+                chartContainer.style.justifyContent = 'space-between';
+                chartContainer.style.alignItems = 'flex-end';
+                chartContainer.innerHTML = chartHtml;
+            }
+
         } catch(e) {
             console.error("Dữ liệu Backend lỗi, không phải JSON:", text);
             if(dashElement) {
@@ -296,24 +337,28 @@ function loadPhieuMuon() {
 }
 
 function xuLyPhieu(idPhieu, hanhDong) {
+    let lyDo = '';
+    if (hanhDong === 'Từ chối') {
+        lyDo = prompt("Nhập lý do từ chối & Thiết bị thay thế (nếu có):");
+        if (lyDo === null) return; // Hủy bỏ thao tác nếu nhấn Cancel
+        if (lyDo.trim() === '') return alert("Vui lòng nhập lý do từ chối!");
+    }
+
     fetch('api_update_borrow.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: idPhieu, action: hanhDong })
+        body: JSON.stringify({ id: idPhieu, action: hanhDong, ly_do: lyDo })
     })
     .then(res => res.json())
     .then(data => {
         if (data.status === "success") {
             alert("Đã " + hanhDong + " yêu cầu PM-" + idPhieu);
-            loadPhieuMuon(); // Cập nhật lại bảng sau khi duyệt/từ chối
+            loadPhieuMuon(); 
         } else {
             alert("Có lỗi xảy ra: " + data.message);
         }
     })
-    .catch(error => {
-        console.error('Lỗi xử lý phiếu:', error);
-        alert("Không thể xử lý yêu cầu!");
-    });
+    .catch(error => console.error('Lỗi xử lý phiếu:', error));
 }
 
 function loadAdminTabs() {
@@ -340,20 +385,145 @@ function loadAdminTabs() {
         if(e) e.innerHTML = html;
         
         let statTb = document.getElementById('stat_admin_tongtb');
-        if(statTb) statTb.innerText = data.length * 30; // 30 phòng x số loại thiết bị
+        if(statTb) statTb.innerText = data.length * 30;
     });
+
+    // Tải danh sách Người dùng
+    fetch('api_get_users.php').then(res => res.json()).then(data => {
+        let html = '';
+        data.forEach(u => {
+            let btnXoa = u.role !== 'admin' ? `<button onclick="xoaNguoiDung('${u.username}')" class="btn-icon btn-reject" style="width:auto; padding:5px 10px; font-size:12px;">Xóa</button>` : '';
+            html += `<tr><td>${u.username}</td><td>${u.role === 'admin' ? 'Quản trị viên' : 'Sinh viên'}</td><td>${btnXoa}</td></tr>`;
+        });
+        let e = document.getElementById('ds_nguoidung');
+        if(e) e.innerHTML = html;
+        
+        let statUser = document.getElementById('stat_admin_user');
+        if(statUser) statUser.innerText = data.length;
+    }).catch(error => console.error('Lỗi load người dùng:', error));
+}
+
+function xoaNguoiDung(username) {
+    if(!confirm("Bạn có chắc chắn muốn xóa tài khoản: " + username + "?")) return;
+    
+    fetch('api_delete_user.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("Đã xóa tài khoản " + username);
+            loadAdminTabs(); // Tải lại bảng người dùng và số liệu
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+// ==========================================
+// TÌM KIẾM DỮ LIỆU BẢNG
+// ==========================================
+function khoiTaoTimKiem(inputId, danhSachBangId) {
+    let searchInput = document.getElementById(inputId);
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function() {
+        let filter = this.value.toLowerCase();
+        
+        danhSachBangId.forEach(tbodyId => {
+            let tbody = document.getElementById(tbodyId);
+            if (!tbody) return;
+            
+            let rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                let rowText = rows[i].textContent.toLowerCase();
+                // Ẩn/hiện hàng dựa trên kết quả khớp chuỗi
+                rows[i].style.display = rowText.includes(filter) ? '' : 'none';
+            }
+        });
+    });
+}
+
+// ==========================================
+// TRANG CHỦ - Quản lý trạng thái và nạp dữ liệu
+// ==========================================
+function dangXuat() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
+
+function kiemTraDangNhapTrangChu() {
+    let currentUser = localStorage.getItem("currentUser");
+    let currentRole = localStorage.getItem("currentRole");
+    let authSection = document.getElementById("auth_section");
+    let btnHero = document.getElementById("btn_hero_action");
+
+    if (currentUser && authSection) {
+        let dashboardUrl = currentRole === 'admin' ? 'admin.html' : 'sinhvien.html';
+        
+        // Thay nút Đăng nhập/Đăng ký bằng thông tin user
+        authSection.innerHTML = `
+            <span style="margin-right: 15px; font-weight: bold; color: #2c3e50;">Chào, ${currentUser}</span>
+            <button class="btn-primary" onclick="window.location.href='${dashboardUrl}'">Bảng điều khiển</button>
+            <button class="btn-outline" onclick="dangXuat()" style="margin-left: 10px;">Đăng xuất</button>
+        `;
+
+        // Đổi hướng nút banner
+        if (btnHero) {
+            btnHero.innerText = "Vào Bảng điều khiển";
+            btnHero.onclick = function() { window.location.href = dashboardUrl; };
+        }
+    }
+}
+
+function loadTrangChu() {
+    fetch('api_get_equipments.php')
+    .then(res => res.json())
+    .then(data => {
+        let html = '';
+        let top3 = data.slice(0, 3);
+        let currentUser = localStorage.getItem("currentUser");
+        let currentRole = localStorage.getItem("currentRole");
+        
+        let actionUrl = currentUser ? (currentRole === 'admin' ? 'admin.html' : 'sinhvien.html') : 'login.html';
+        let btnText = currentUser ? 'Vào mượn ngay' : 'Đăng nhập để mượn';
+
+        top3.forEach(tb => {
+            html += `
+            <div style="background: white; padding: 25px; border-radius: 10px; width: 30%; min-width: 250px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center;">
+                <h3 style="color: #2c3e50; margin-bottom: 10px;">${tb.ten_tb}</h3>
+                <p style="color: #7f8c8d; margin-bottom: 15px;">Tình trạng: <strong style="color: ${tb.status === 'Sẵn sàng' ? '#2ecc71' : '#e74c3c'}">${tb.status}</strong></p>
+                <button onclick="window.location.href='${actionUrl}'" class="btn-primary" style="padding: 8px 20px; border-radius: 5px;">${btnText}</button>
+            </div>`;
+        });
+        
+        let container = document.getElementById('ds_thietbi_trangchu');
+        if(container) container.innerHTML = html;
+    })
+    .catch(error => console.error('Lỗi load trang chủ:', error));
 }
 
 // ==========================================
 // KHỞI TẠO DỮ LIỆU KHI LOAD TRANG
 // ==========================================
 window.onload = function() {
-    if (window.location.pathname.includes('sinhvien.html')) {
+    let path = window.location.pathname;
+
+    if (path.includes('sinhvien.html')) {
         loadThietBi();
         loadDuLieuSinhVien();
+        if(typeof khoiTaoTimKiem === 'function') khoiTaoTimKiem('search_input', ['ds_thietbi', 'ds_lichsu_ganday', 'ds_lichsu_toanbo']);
     }
-    if (window.location.pathname.includes('admin.html')) {
+    else if (path.includes('admin.html')) {
         loadPhieuMuon();
-        loadAdminTabs();
+        if(typeof loadAdminTabs === 'function') loadAdminTabs();
+        if(typeof khoiTaoTimKiem === 'function') khoiTaoTimKiem('search_input', ['ds_phieumuon_dashboard', 'ds_phieumuon_full', 'ds_thietbi_admin', 'ds_nguoidung', 'ds_baohong']);
+    }
+    else {
+        // Áp dụng cho index.html hoặc đường dẫn thư mục gốc
+        kiemTraDangNhapTrangChu();
+        loadTrangChu();
     }
 }

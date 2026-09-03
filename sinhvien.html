@@ -10,7 +10,7 @@
     <div class="dashboard-layout">
         <!-- Thanh menu bên trái (Sidebar) -->
         <aside class="sidebar">
-            <div class="sidebar-logo">USSH</div>
+            <div class="sidebar-logo">NIIE</div>
             <div class="sidebar-user">
                 <div class="avatar">👨‍🎓</div>
                 <div class="user-info">
@@ -19,6 +19,7 @@
                 </div>
             </div>
             <ul class="sidebar-menu">
+                <li onclick="window.location.href='index.html'">Về Trang chủ</li>
                 <li class="active" onclick="chuyenTab('dashboard', this)">Bảng điều khiển</li>
                 <li onclick="chuyenTab('history', this)">Lịch sử mượn</li>
                 <li onclick="chuyenTab('report', this)">Báo hỏng thiết bị</li>
@@ -31,8 +32,8 @@
             <header class="topbar">
                 <h2 id="welcome_text">Chào mừng, B!</h2>
                 <div class="topbar-actions">
-                    <input type="text" placeholder="🔍 Tìm kiếm..." class="search-input">
-                    <button class="btn-logout" onclick="window.location.href='login.html'" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">Đăng xuất</button>
+                    <input type="text" id="search_input" placeholder="🔍 Tìm kiếm..." class="search-input">
+                    <button class="btn-logout" onclick="dangXuat()" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">Đăng xuất</button>
                 </div>
             </header>
 

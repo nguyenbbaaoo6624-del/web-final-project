@@ -171,14 +171,26 @@ function loadDuLieuSinhVien() {
             let countDangMuon = 0;
             
             myBorrows.forEach(p => {
-                let statusColor = p.status === 'Pending' ? '#f39c12' : (p.status === 'Đã duyệt' ? '#2ecc71' : '#e74c3c');
+                let statusColor = '#f39c12';
                 let statusText = p.status === 'Pending' ? 'Đang chờ' : p.status;
                 let mucDich = p.muc_dich ? p.muc_dich : 'N/A';
+                let actionBtn = '';
 
-                if(p.status === 'Pending') countDangCho++;
-                if(p.status === 'Đã duyệt') {
+                if (p.status === 'Pending') {
+                    countDangCho++;
+                    statusColor = '#f39c12';
+                } else if (p.status === 'Đã duyệt') {
                     countDangMuon++;
+                    statusColor = '#2ecc71';
+                    actionBtn = `<button onclick="yeuCauTra(${p.id})" class="btn-primary" style="padding: 4px 8px; font-size: 12px; margin-left: 8px;">Trả thiết bị</button>`;
                     htmlSelectBaoHong += `<option value="${p.ten_tb}">${p.ten_tb} (Mã phiếu: PM-${p.id})</option>`;
+                } else if (p.status === 'Chờ xác nhận trả') {
+                    statusColor = '#e67e22';
+                    actionBtn = `<small style="color:#e67e22; margin-left: 8px;">(Đang chờ Admin duyệt trả)</small>`;
+                } else if (p.status === 'Đã trả') {
+                    statusColor = '#3498db';
+                } else if (p.status === 'Từ chối') {
+                    statusColor = '#e74c3c';
                 }
 
                 htmlHistory += `<tr>
@@ -186,15 +198,17 @@ function loadDuLieuSinhVien() {
                     <td>${p.ten_tb}</td>
                     <td>${mucDich}</td>
                     <td>${p.ngay_tra}</td>
-                    <td><span style="color: ${statusColor}; font-weight: bold;">${statusText}</span></td>
+                    <td>
+                        <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>
+                        ${actionBtn}
+                    </td>
                 </tr>`;
                 
                 if(p.status !== 'Pending') {
-                    // Xử lý chuỗi hiển thị lý do nếu bị từ chối
                     let lyDoText = (p.status === 'Từ chối' && p.ly_do_tu_choi) ? `<br><span style="color: #e74c3c; font-size: 13px;">Phản hồi từ Admin: <b>${p.ly_do_tu_choi}</b></span>` : '';
                     
                     htmlNoti += `<li style="padding: 15px; border-bottom: 1px solid #eee;">
-                        Yêu cầu mượn <b>${p.ten_tb}</b> của bạn đã bị <b>${p.status}</b>. ${lyDoText}
+                        Yêu cầu mượn <b>${p.ten_tb}</b> của bạn đã chuyển sang trạng thái: <b>${statusText}</b>. ${lyDoText}
                     </li>`;
                 }
             });
@@ -228,6 +242,55 @@ function guiBaoHong() {
         alert(data.message);
         if(data.status === "success") document.getElementById('formBaoHong').reset();
     });
+}
+
+// 1. SINH VIÊN: Gửi yêu cầu trả thiết bị
+function yeuCauTra(borrowId) {
+    if (!confirm("Bạn có chắc chắn muốn gửi yêu cầu trả thiết bị này?")) return;
+
+    fetch('api_return_borrow.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'request_return',
+            borrow_id: borrowId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            loadDuLieuSinhVien(); // Refresh lại giao diện sinh viên
+        }
+    })
+    .catch(error => console.error('Lỗi gửi yêu cầu trả:', error));
+}
+
+// 2. ADMIN: Kiểm tra tình trạng & Xác nhận đã nhận lại thiết bị
+function xacNhanTraAdmin(borrowId, maTb) {
+    let condition = prompt("Nhập tình trạng thiết bị khi nhận lại (VD: Bình thường, Hỏng nhẹ, Trầy xước):", "Bình thường");
+    if (condition === null) return; // Nhấn Hủy
+    if (condition.trim() === '') condition = "Bình thường";
+
+    fetch('api_return_borrow.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'confirm_return',
+            borrow_id: borrowId,
+            ma_tb: maTb,
+            condition: condition
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            loadPhieuMuon(); // Refresh bảng phiếu mượn Admin
+            if (typeof loadAdminTabs === 'function') loadAdminTabs(); // Refresh danh sách thiết bị Admin
+        }
+    })
+    .catch(error => console.error('Lỗi xác nhận trả:', error));
 }
 
 // ==========================================
@@ -278,17 +341,26 @@ function loadPhieuMuon() {
                         </tr>`;
                     }
 
+                    let btnActionAdmin = 'Đã xử lý';
+                    if (phieu.status === 'Pending') {
+                        btnActionAdmin = `
+                            <button onclick="xuLyPhieu(${phieu.id}, 'Đã duyệt')" class="btn-icon btn-approve">✔️</button>
+                            <button onclick="xuLyPhieu(${phieu.id}, 'Từ chối')" class="btn-icon btn-reject">❌</button>
+                        `;
+                    } else if (phieu.status === 'Chờ xác nhận trả') {
+                        btnActionAdmin = `
+                            <button onclick="xacNhanTraAdmin(${phieu.id}, '${phieu.ma_tb}')" class="btn-primary" style="padding: 4px 10px; font-size: 12px; background-color: #27ae60;">
+                                Nhận lại & Kiểm tra
+                            </button>
+                        `;
+                    }
+
                     htmlFull += `<tr id="phieu_full_${phieu.id}">
                         <td>${phieu.username}</td>
                         <td>${phieu.ten_tb}</td>
                         <td>${mucDich}</td>
                         <td><b>${phieu.status}</b></td>
-                        <td>
-                            ${phieu.status === 'Pending' ? `
-                                <button onclick="xuLyPhieu(${phieu.id}, 'Đã duyệt')" class="btn-icon btn-approve">✔️</button>
-                                <button onclick="xuLyPhieu(${phieu.id}, 'Từ chối')" class="btn-icon btn-reject">❌</button>
-                            ` : 'Đã xử lý'}
-                        </td>
+                        <td>${btnActionAdmin}</td>
                     </tr>`;
                 });
             }

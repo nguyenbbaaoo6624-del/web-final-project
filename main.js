@@ -1,6 +1,6 @@
-// ==========================================
+
 // XỬ LÝ ĐĂNG NHẬP & ĐĂNG KÝ
-// ==========================================
+
 function xuLyDangNhap() {
     let u = document.getElementById('username').value;
     let p = document.getElementById('password').value;
@@ -72,82 +72,157 @@ function xuLyDangKy() {
     });
 }
 
-// ==========================================
+
 // TRANG SINH VIÊN - Load thiết bị & Gửi yêu cầu
-// ==========================================
+
+// Biến toàn cục lưu toàn bộ thiết bị
+let allEquipments = []; 
+
+// Hàm fetch dữ liệu từ CSDL
 function loadThietBi() {
     fetch('api_get_equipments.php')
     .then(res => res.json())
     .then(data => {
-        let html = '';
-
-        if (data.length === 0) {
-            html = '<tr><td colspan="4" style="text-align:center;">Không có thiết bị nào</td></tr>';
-        } else {
-            data.forEach(tb => {
-                html += `<tr>
-                    <td>${tb.ma_tb}</td>
-                    <td>${tb.ten_tb}</td>
-                    <td>${tb.status}</td>
-                    <td>
-                        <button onclick="chonThietBi('${tb.ma_tb}', '${tb.ten_tb}')" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">
-                            Chọn
-                        </button>
-                    </td>
-                </tr>`;
+        allEquipments = data;
+        
+        // Trích xuất danh sách các phòng duy nhất để tạo dropdown
+        let danhSachPhong = [...new Set(data.map(tb => tb.phong).filter(p => p))];
+        let dropdown = document.getElementById('loc_phong');
+        
+        if (dropdown) {
+            let optionsHtml = '<option value="all">-- Vui lòng chọn phòng học --</option>';
+            danhSachPhong.forEach(phong => {
+                optionsHtml += `<option value="${phong}">${phong}</option>`;
             });
+            dropdown.innerHTML = optionsHtml;
+            
+            // Gán giá trị mặc định là phòng đầu tiên trong danh sách để không hiện toàn bộ kho
+            if (danhSachPhong.length > 0) {
+                dropdown.value = danhSachPhong[0];
+            }
         }
-        let ds = document.getElementById('ds_thietbi');
-        if(ds) ds.innerHTML = html;
+        
+        // Gọi hàm render hiển thị dữ liệu
+        renderThietBiSinhVien();
     })
-    .catch(error => {
-        console.error('Lỗi load thiết bị:', error);
-    });
+    .catch(error => console.error('Lỗi tải thiết bị:', error));
 }
 
-function chonThietBi(ma, ten) {
-    let tbElement = document.getElementById('tb_duoc_chon');
-    if(tbElement) {
-        tbElement.value = ma + ' - ' + ten;
-        tbElement.setAttribute('data-matb', ma);
+// Hàm lọc và hiển thị danh sách thiết bị
+function renderThietBiSinhVien() {
+    let dropdown = document.getElementById('loc_phong');
+    if (!dropdown) return;
+    
+    let selectedPhong = dropdown.value;
+    
+    // Lọc thiết bị theo phòng đã chọn
+    let filteredData = allEquipments;
+    if (selectedPhong !== 'all') {
+        filteredData = allEquipments.filter(tb => tb.phong === selectedPhong);
+    } else {
+        // Nếu chọn "all", có thể làm rỗng mảng để không hiển thị gì cho đến khi chọn phòng
+        filteredData = []; 
+    }
+    
+    let html = '';
+    filteredData.forEach(tb => {
+        let statusColor = tb.status === 'Sẵn sàng' ? '#2ecc71' : (tb.status === 'Bảo trì' ? '#e74c3c' : '#f39c12');
+        let actionBtn = tb.status === 'Sẵn sàng' 
+            ? `<button onclick="chonThietBi('${tb.ma_tb}', '${tb.ten_tb}')" style="padding: 5px 15px; background: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer;">Chọn</button>` 
+            : `<span style="color: #7f8c8d; font-size: 13px;">Không khả dụng</span>`;
+            
+        html += `<tr>
+            <td>${tb.ma_tb}</td>
+            <td>${tb.ten_tb}</td>
+            <td style="color:${statusColor};">${tb.status}</td>
+            <td>${actionBtn}</td>
+        </tr>`;
+    });
+    
+    let tbody = document.getElementById('ds_thietbi');
+    if (tbody) {
+        tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">Không có thiết bị trong phòng này</td></tr>';
     }
 }
 
-function guiYeuCau() {
-    let currentUser = localStorage.getItem("currentUser");
-    let tbElement = document.getElementById('tb_duoc_chon');
-    let ma_tb     = tbElement ? tbElement.getAttribute('data-matb') : null;
-    let phongHoc  = document.getElementById('phong_hoc').value;
-    let ngayTra   = document.getElementById('ngay_tra').value;
-    let mucDichGoc = document.getElementById('muc_dich').value;
-
-    if (!currentUser) return window.location.href = 'login.html';
-    if (!ma_tb) return alert("Vui lòng chọn thiết bị!");
-    if (!phongHoc || phongHoc < 1 || phongHoc > 30) return alert("Vui lòng nhập số phòng hợp lệ (1-30)!");
-    if (!ngayTra) return alert("Vui lòng chọn ngày trả!");
-
-    // Gộp Số phòng vào Mục đích
-    let mucDich = `[Phòng ${phongHoc}] ${mucDichGoc}`;
-
-    fetch('api_create_borrow.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            username: currentUser, ma_tb: ma_tb, ngay_tra: ngayTra, muc_dich: mucDich
-        })
-    }).then(res => res.json()).then(data => {
-        alert(data.message);
-        if (data.status === "success") {
-            document.getElementById('formMuon').reset();
-            loadThietBi();
-            loadDuLieuSinhVien();
-        }
-    });
+// Sinh viên chọn thiết bị
+function chonThietBi(maTb, tenTb) {
+    document.getElementById('form_muon').style.display = 'block';
+    document.getElementById('tb_duoc_chon').innerText = tenTb;
+    document.getElementById('ma_tb_muon').value = maTb;
+    
+    let dropdown = document.getElementById('loc_phong');
+    let phong = dropdown ? dropdown.value : 'Không xác định';
+    document.getElementById('phong_su_dung').innerText = phong;
 }
 
-// ==========================================
+// Sinh viên gửi form
+function guiYeuCauMuon() {
+    try {
+        let currentUser = localStorage.getItem("currentUser");
+        if(!currentUser) {
+            alert("Vui lòng đăng nhập!");
+            return;
+        }
+        
+        // Kiểm tra các phần tử HTML xem có tồn tại không
+        let maTbEl = document.getElementById('ma_tb_muon');
+        let mucDichEl = document.getElementById('muc_dich_muon');
+        let ngayTraEl = document.getElementById('ngay_tra');
+        let phongEl = document.getElementById('phong_su_dung');
+        
+        if (!maTbEl || !mucDichEl || !ngayTraEl || !phongEl) {
+            alert("Lỗi: Giao diện HTML của form mượn không khớp với Code JS. Hãy kiểm tra lại các ID.");
+            return;
+        }
+        
+        let maTb = maTbEl.value;
+        let mucDichNhap = mucDichEl.value;
+        let ngayTra = ngayTraEl.value;
+        let phong = phongEl.innerText || 'Không xác định';
+        
+        if(!mucDichNhap || !ngayTra) {
+            alert("Vui lòng nhập đầy đủ Mục đích và Ngày trả!");
+            return;
+        }
+        
+        // Nối tên phòng vào mục đích
+        let mucDichGop = `[${phong}] ${mucDichNhap}`;
+
+        fetch('api_borrow.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                username: currentUser, 
+                ma_tb: maTb, 
+                muc_dich: mucDichGop, 
+                ngay_tra: ngayTra 
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            if(data.status === 'success') {
+                document.getElementById('form_muon').style.display = 'none';
+                // Reset form
+                document.getElementById('muc_dich_muon').value = '';
+                document.getElementById('ngay_tra').value = '';
+                loadDuLieuSinhVien(); // Tải lại bảng lịch sử
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi mượn:', error);
+            alert("Lỗi kết nối máy chủ! (Nhấn F12 -> Tab Console để xem chi tiết)");
+        });
+    } catch (e) {
+        console.error('Lỗi Code JS:', e);
+        alert("Lỗi thực thi JavaScript! (Nhấn F12 -> Tab Console để xem chi tiết)");
+    }
+}
+
+
 // TRANG SINH VIÊN - Load lịch sử & Báo hỏng
-// ==========================================
+
 function loadDuLieuSinhVien() {
     let currentUser = localStorage.getItem("currentUser");
     if(!currentUser) return;
@@ -179,6 +254,7 @@ function loadDuLieuSinhVien() {
                 if (p.status === 'Pending') {
                     countDangCho++;
                     statusColor = '#f39c12';
+                    actionBtn = `<br><button onclick="huyPhieuMuon(${p.id})" style="padding: 4px 8px; font-size: 12px; margin-top: 5px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 3px;">Hủy yêu cầu</button>`;
                 } else if (p.status === 'Đã duyệt') {
                     countDangMuon++;
                     statusColor = '#2ecc71';
@@ -189,7 +265,7 @@ function loadDuLieuSinhVien() {
                     actionBtn = `<small style="color:#e67e22; margin-left: 8px;">(Đang chờ Admin duyệt trả)</small>`;
                 } else if (p.status === 'Đã trả') {
                     statusColor = '#3498db';
-                } else if (p.status === 'Từ chối') {
+                } else if (p.status === 'Từ chối' || p.status === 'Đã hủy') {
                     statusColor = '#e74c3c';
                 }
 
@@ -293,9 +369,9 @@ function xacNhanTraAdmin(borrowId, maTb) {
     .catch(error => console.error('Lỗi xác nhận trả:', error));
 }
 
-// ==========================================
+
 // TRANG ADMIN - Load danh sách phiếu mượn & Xử lý
-// ==========================================
+
 function loadPhieuMuon() {
     let currentUser = localStorage.getItem("currentUser");
     let adminName = document.getElementById("admin_fullname");
@@ -408,64 +484,105 @@ function loadPhieuMuon() {
     .catch(error => console.error('Lỗi fetch:', error));
 }
 
-function xuLyPhieu(idPhieu, hanhDong) {
+// Tính năng: Admin Duyệt hoặc Từ chối phiếu mượn
+function xuLyPhieu(id, status) {
     let lyDo = '';
-    if (hanhDong === 'Từ chối') {
-        lyDo = prompt("Nhập lý do từ chối & Thiết bị thay thế (nếu có):");
-        if (lyDo === null) return; // Hủy bỏ thao tác nếu nhấn Cancel
-        if (lyDo.trim() === '') return alert("Vui lòng nhập lý do từ chối!");
+    if (status === 'Từ chối') {
+        lyDo = prompt("Nhập lý do từ chối (VD: Trùng lịch, Hỏng...):");
+        if (lyDo === null) return; 
     }
 
-    fetch('api_update_borrow.php', {
+    fetch('api_process_borrow.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: idPhieu, action: hanhDong, ly_do: lyDo })
+        body: JSON.stringify({ 
+            id: id, 
+            status: status, 
+            ly_do_tu_choi: lyDo 
+        })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.status === "success") {
-            alert("Đã " + hanhDong + " yêu cầu PM-" + idPhieu);
-            loadPhieuMuon(); 
-        } else {
-            alert("Có lỗi xảy ra: " + data.message);
+        alert(data.message);
+        if (data.status === 'success') {
+            loadPhieuMuon(); // Tải lại bảng phiếu
+            loadAdminTabs(); // Cập nhật lại số lượng và trạng thái thiết bị
         }
     })
-    .catch(error => console.error('Lỗi xử lý phiếu:', error));
+    .catch(error => console.error("Lỗi xử lý phiếu:", error));
+}
+
+function huyPhieuMuon(id) {
+    if(!confirm("Bạn có chắc chắn muốn hủy yêu cầu mượn này?")) return;
+    
+    fetch('api_cancel_borrow.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if(data.status === 'success') loadDuLieuSinhVien();
+    });
 }
 
 function loadAdminTabs() {
     // Tải danh sách Báo hỏng
     fetch('api_get_reports.php').then(res => res.json()).then(data => {
         let html = '';
-        data.forEach(r => {
-            html += `<tr><td>BH-${r.id}</td><td>${r.username}</td><td>${r.thiet_bi}</td><td>${r.mo_ta}</td><td>${r.ngay_bao}</td></tr>`;
+        let countHong = 0;
+        data.forEach(rp => {
+            if(rp.status === 'Chờ xử lý') countHong++;
+            
+            let logText = rp.status === 'Đã sửa xong' ? `Chi phí: ${rp.chi_phi}đ<br><small>${rp.nhat_ky_sua}</small>` : 'Đang chờ';
+            
+            let btn = rp.status === 'Chờ xử lý' 
+                ? `<button onclick="hoanTatBaoTri(${rp.id}, '${rp.thiet_bi}')" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 3px; cursor: pointer;">Sửa xong</button>` 
+                : '<span style="color: green; font-weight: bold;">Hoàn tất</span>';
+            
+            html += `<tr>
+                <td>${rp.id}</td>
+                <td>${rp.username}</td>
+                <td>${rp.thiet_bi}</td>
+                <td>${rp.mo_ta}</td>
+                <td>${rp.ngay_bao}</td>
+                <td>${logText}</td>
+                <td>${btn}</td>
+            </tr>`;
         });
         let e = document.getElementById('ds_baohong');
-        if(e) e.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">Chưa có báo cáo hỏng</td></tr>';
-        
+        if(e) e.innerHTML = html;
         let statHong = document.getElementById('stat_admin_hong');
-        if(statHong) statHong.innerText = data.length;
+        if(statHong) statHong.innerText = countHong;
     });
 
     // Tải danh sách thiết bị cho Admin
+    // Biến toàn cục lưu thiết bị bên trang admin
+    if (typeof adminEquipments === 'undefined') {
+        window.adminEquipments = [];
+    }
+
+    // Tải danh sách thiết bị cho Admin
     fetch('api_get_equipments.php').then(res => res.json()).then(data => {
-        let html = '';
-        data.forEach(tb => {
-            let phong = tb.phong ? tb.phong : 'Kho chung';
-            let statusColor = tb.status === 'Sẵn sàng' ? '#2ecc71' : (tb.status === 'Bảo trì' ? '#e74c3c' : '#f39c12');
-            html += `<tr>
-                <td>${tb.ma_tb}</td>
-                <td>${tb.ten_tb}</td>
-                <td><b>${phong}</b></td>
-                <td style="color:${statusColor}; font-weight:bold;">${tb.status}</td>
-                <td>
-                    <button onclick="suaThietBi('${tb.ma_tb}', '${tb.ten_tb}', '${phong}', '${tb.status}')" style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 5px;">Sửa</button>
-                    <button onclick="xoaThietBi('${tb.ma_tb}')" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">Xóa</button>
-                </td>
-            </tr>`;
-        });
-        let e = document.getElementById('ds_thietbi_admin');
-        if(e) e.innerHTML = html;
+        window.adminEquipments = data;
+        
+        let danhSachPhong = [...new Set(data.map(tb => tb.phong ? tb.phong : 'Kho chung'))];
+        let dropdown = document.getElementById('loc_phong_admin');
+        
+        if (dropdown) {
+            let currentVal = dropdown.value; // Giữ lại giá trị đang lọc khi tải lại dữ liệu
+            let optionsHtml = '<option value="all">-- Tất cả thiết bị --</option>';
+            danhSachPhong.forEach(phong => {
+                optionsHtml += `<option value="${phong}">${phong}</option>`;
+            });
+            dropdown.innerHTML = optionsHtml;
+            if (danhSachPhong.includes(currentVal)) {
+                dropdown.value = currentVal;
+            }
+        }
+        
+        renderThietBiAdmin();
         
         let statTb = document.getElementById('stat_admin_tongtb');
         if(statTb) statTb.innerText = data.length; 
@@ -475,15 +592,49 @@ function loadAdminTabs() {
     fetch('api_get_users.php').then(res => res.json()).then(data => {
         let html = '';
         data.forEach(u => {
-            let btnXoa = u.role !== 'admin' ? `<button onclick="xoaNguoiDung('${u.username}')" class="btn-icon btn-reject" style="width:auto; padding:5px 10px; font-size:12px;">Xóa</button>` : '';
-            html += `<tr><td>${u.username}</td><td>${u.role === 'admin' ? 'Quản trị viên' : 'Sinh viên'}</td><td>${btnXoa}</td></tr>`;
+            html += `<tr>
+                <td><b>${u.username}</b></td>
+                <td>${u.role}</td>
+                <td>
+                    ${u.role !== 'admin' ? `<button onclick="xoaUser('${u.username}')" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">Xóa</button>` : 'Mặc định'}
+                </td>
+            </tr>`;
         });
         let e = document.getElementById('ds_nguoidung');
         if(e) e.innerHTML = html;
-        
         let statUser = document.getElementById('stat_admin_user');
         if(statUser) statUser.innerText = data.length;
-    }).catch(error => console.error('Lỗi load người dùng:', error));
+    });
+}
+
+// Hàm hiển thị danh sách thiết bị Admin dựa trên bộ lọc
+function renderThietBiAdmin() {
+    let dropdown = document.getElementById('loc_phong_admin');
+    let selectedPhong = dropdown ? dropdown.value : 'all';
+    
+    let filteredData = window.adminEquipments;
+    if (selectedPhong !== 'all') {
+        filteredData = window.adminEquipments.filter(tb => (tb.phong ? tb.phong : 'Kho chung') === selectedPhong);
+    }
+    
+    let html = '';
+    filteredData.forEach(tb => {
+        let phong = tb.phong ? tb.phong : 'Kho chung';
+        let statusColor = tb.status === 'Sẵn sàng' ? '#2ecc71' : (tb.status === 'Bảo trì' ? '#e74c3c' : '#f39c12');
+        html += `<tr>
+            <td>${tb.ma_tb}</td>
+            <td>${tb.ten_tb}</td>
+            <td><b>${phong}</b></td>
+            <td style="color:${statusColor}; font-weight:bold;">${tb.status}</td>
+            <td>
+                <button onclick="suaThietBi('${tb.ma_tb}', '${tb.ten_tb}', '${phong}', '${tb.status}')" style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 5px;">Sửa</button>
+                <button onclick="xoaThietBi('${tb.ma_tb}')" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">Xóa</button>
+            </td>
+        </tr>`;
+    });
+    
+    let e = document.getElementById('ds_thietbi_admin');
+    if(e) e.innerHTML = html || '<tr><td colspan="5" style="text-align:center;">Không có thiết bị</td></tr>';
 }
 
 function xoaNguoiDung(username) {
@@ -505,9 +656,9 @@ function xoaNguoiDung(username) {
     });
 }
 
-// ==========================================
+
 // TÌM KIẾM DỮ LIỆU BẢNG
-// ==========================================
+
 function khoiTaoTimKiem(inputId, danhSachBangId) {
     let searchInput = document.getElementById(inputId);
     if (!searchInput) return;
@@ -529,9 +680,9 @@ function khoiTaoTimKiem(inputId, danhSachBangId) {
     });
 }
 
-// ==========================================
+
 // TRANG CHỦ - Quản lý trạng thái và nạp dữ liệu
-// ==========================================
+
 function dangXuat() {
     localStorage.clear();
     window.location.href = 'index.html';
@@ -604,6 +755,25 @@ let btnLuu = document.getElementById('btn_luu_tb');
     btnLuu.style.background = '#f39c12';
 }
 
+// Tính năng: Xác nhận đã sửa xong thiết bị
+function hoanTatBaoTri(id, maTb) {
+    let nhatKy = prompt("Nhập nhật ký sửa chữa (VD: Thay linh kiện...):", "");
+    if (nhatKy === null) return; 
+    let chiPhi = prompt("Nhập chi phí sửa chữa (VNĐ):", "0");
+    if (chiPhi === null) return; 
+
+    fetch('api_manage_report.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, ma_tb: maTb, nhat_ky: nhatKy, chi_phi: chiPhi })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if(data.status === 'success') loadAdminTabs();
+    });
+}
+
 // 2. Làm mới form
 function lamMoiFormTb() {
     document.getElementById('form_ma_tb').value = '';
@@ -668,9 +838,9 @@ function xoaThietBi(maTb) {
     .catch(error => console.error('Lỗi xóa thiết bị:', error));
 }
 
-// ==========================================
+
 // KHỞI TẠO DỮ LIỆU KHI LOAD TRANG
-// ==========================================
+
 window.onload = function() {
     let path = window.location.pathname;
 

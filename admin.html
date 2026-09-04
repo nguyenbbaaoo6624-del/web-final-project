@@ -120,6 +120,14 @@
                 <div class="table-section">
                     <h3>Danh mục Thiết bị tiêu chuẩn</h3>
 
+                    <!-- Bộ lọc phòng cho Admin -->
+                     <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <label for="loc_phong_admin" style="font-weight: bold;">Lọc theo phòng:</label>
+                        <select id="loc_phong_admin" onchange="renderThietBiAdmin()" style="padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; width: 250px;">
+                            <option value="all">-- Tất cả thiết bị --</option>
+                        </select>
+                     </div>
+
                     <!-- Form Thêm / Cập nhật thiết bị -->
                     <div style="background: #ecf0f1; padding: 15px; margin-bottom: 20px; border-radius: 5px; display: flex; gap: 10px; align-items: center;">
                         <input type="text" id="form_ma_tb" placeholder="Mã TB (VD: TB-007)" style="padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;">
@@ -182,6 +190,8 @@
                                 <th>Thiết bị</th>
                                 <th>Mô tả lỗi</th>
                                 <th>Thời gian</th>
+                                <th>Nhật ký & Chi phí</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="ds_baohong">

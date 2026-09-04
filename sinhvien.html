@@ -59,6 +59,15 @@
                     <!-- Cột trái: Danh sách thiết bị & Form đăng ký -->
                     <div class="table-section">
                         <h3>1. Danh mục thiết bị khả dụng</h3>
+
+                        <!-- Bộ lọc phòng -->
+                        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                          <label for="loc_phong" style="font-weight: bold;">Chọn phòng học:</label>
+                          <select id="loc_phong" onchange="renderThietBiSinhVien()" style="padding: 8px; border: 1px solid #bdc3c7; border-radius: 4px; width: 250px;">
+                              <option value="all">-- Chọn phòng học --</option>
+                              <!-- Tự động nạp từ JS -->
+                          </select>
+                        </div>
                         <table class="data-table" style="margin-bottom: 30px;">
                             <thead>
                                 <tr>
@@ -74,21 +83,23 @@
                         </table>
 
                         <h3>2. Đăng ký mượn thiết bị</h3>
-                        <form id="formMuon">
-                         <label>Thiết bị đang chọn:</label>
-                         <input type="text" id="tb_duoc_chon" readonly style="background-color: #f5f6fa; border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+                        <!-- Cấu trúc Form mượn sau khi sửa -->
+                            <form id="form_muon" style="display:none; background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                               <h4>Đăng ký mượn thiết bị</h4>
+                               <p><b>Thiết bị chọn:</b> <span id="tb_duoc_chon" style="color: #2980b9; font-weight: bold;"></span></p>
+                               <p><b>Phòng sử dụng:</b> <span id="phong_su_dung" style="color: #2980b9; font-weight: bold;"></span></p>
+                               <input type="hidden" id="ma_tb_muon">
     
-                         <label>Phòng học (1-30):</label>
-                         <input type="number" id="phong_hoc" min="1" max="30" placeholder="Ví dụ: 15" style="border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
-
-                         <label>Ngày hẹn trả:</label>
-                         <input type="date" id="ngay_tra" style="border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
-    
-                         <label>Mục đích mượn cụ thể:</label>
-                         <input type="text" id="muc_dich" placeholder="Ví dụ: Thuyết trình môn Triết" style="border: 1px solid #ddd; width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
-    
-                         <button type="button" onclick="guiYeuCau()" class="btn-primary" style="width: 100%; padding: 12px; border-radius: 5px;">Gửi yêu cầu</button>
-                        </form>
+                               <div style="margin-top: 10px;">
+                                  <label>Mục đích mượn:</label>
+                                  <input type="text" id="muc_dich_muon" placeholder="VD: Dạy học, Thuyết trình..." style="width: 100%; padding: 8px; margin-top: 5px;">
+                               </div>
+                               <div style="margin-top: 10px;">
+                                  <label>Ngày trả dự kiến:</label>
+                                  <input type="date" id="ngay_tra" style="width: 100%; padding: 8px; margin-top: 5px;">
+                               </div>
+                               <button type="button" onclick="guiYeuCauMuon()" style="margin-top: 15px; padding: 10px 20px; background: #2ecc71; color: white; border: none; cursor: pointer;">Gửi yêu cầu</button>
+                            </form>
                     </div>
 
                     <!-- Cột phải: Lịch sử mượn gần đây -->

@@ -119,17 +119,33 @@
             <div id="tab-equipments" class="tab-content" style="display: none;">
                 <div class="table-section">
                     <h3>Danh mục Thiết bị tiêu chuẩn</h3>
+
+                    <!-- Form Thêm / Cập nhật thiết bị -->
+                    <div style="background: #ecf0f1; padding: 15px; margin-bottom: 20px; border-radius: 5px; display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="form_ma_tb" placeholder="Mã TB (VD: TB-007)" style="padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;">
+                        <input type="text" id="form_ten_tb" placeholder="Tên thiết bị..." style="padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px; flex-grow: 1;">
+                        <input type="text" id="form_phong_tb" placeholder="Thuộc Phòng / Kho..." style="padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px; width: 150px;">
+                        <select id="form_status_tb" style="padding: 8px; border: 1px solid #bdc3c7; border-radius: 3px;">
+                            <option value="Sẵn sàng">Sẵn sàng</option>
+                            <option value="Đang sử dụng">Đang sử dụng</option>
+                            <option value="Bảo trì">Bảo trì</option>
+                        </select>
+                        <button id="btn_luu_tb" onclick="luuThietBi()" style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">Thêm mới</button>
+                        <button onclick="lamMoiFormTb()" style="padding: 8px 15px; background: #95a5a6; color: white; border: none; border-radius: 3px; cursor: pointer;">Hủy thao tác</button>
+                    </div>
+                    
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Mã TB</th>
-                                <th>Tên Thiết bị</th>
-                                <th>Số lượng tổng</th>
-                                <th>Tình trạng</th>
+                                <th>Tên thiết bị</th>
+                                <th>Phòng / Vị trí</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="ds_thietbi_admin">
-                            <!-- Nạp từ JS -->
+                             <!-- Nạp từ JS -->
                         </tbody>
                     </table>
                 </div>

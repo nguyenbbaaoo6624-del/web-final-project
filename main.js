@@ -451,13 +451,24 @@ function loadAdminTabs() {
     fetch('api_get_equipments.php').then(res => res.json()).then(data => {
         let html = '';
         data.forEach(tb => {
-            html += `<tr><td>${tb.ma_tb}</td><td>${tb.ten_tb}</td><td>30</td><td>${tb.status}</td></tr>`;
+            let phong = tb.phong ? tb.phong : 'Kho chung';
+            let statusColor = tb.status === 'Sẵn sàng' ? '#2ecc71' : (tb.status === 'Bảo trì' ? '#e74c3c' : '#f39c12');
+            html += `<tr>
+                <td>${tb.ma_tb}</td>
+                <td>${tb.ten_tb}</td>
+                <td><b>${phong}</b></td>
+                <td style="color:${statusColor}; font-weight:bold;">${tb.status}</td>
+                <td>
+                    <button onclick="suaThietBi('${tb.ma_tb}', '${tb.ten_tb}', '${phong}', '${tb.status}')" style="padding: 5px 10px; background: #f39c12; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 5px;">Sửa</button>
+                    <button onclick="xoaThietBi('${tb.ma_tb}')" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">Xóa</button>
+                </td>
+            </tr>`;
         });
         let e = document.getElementById('ds_thietbi_admin');
         if(e) e.innerHTML = html;
         
         let statTb = document.getElementById('stat_admin_tongtb');
-        if(statTb) statTb.innerText = data.length * 30;
+        if(statTb) statTb.innerText = data.length; 
     });
 
     // Tải danh sách Người dùng
@@ -575,6 +586,86 @@ function loadTrangChu() {
         if(container) container.innerHTML = html;
     })
     .catch(error => console.error('Lỗi load trang chủ:', error));
+}
+
+let isEditMode = false;
+
+// 1. Đưa dữ liệu lên Form để Xem chi tiết & Cập nhật
+function suaThietBi(maTb, tenTb, phong, status) {
+    document.getElementById('form_ma_tb').value = maTb;
+    document.getElementById('form_ma_tb').disabled = true; 
+    document.getElementById('form_ten_tb').value = tenTb;
+    document.getElementById('form_phong_tb').value = phong;
+    document.getElementById('form_status_tb').value = status;
+    isEditMode = true;
+
+let btnLuu = document.getElementById('btn_luu_tb');
+    btnLuu.innerText = 'Cập nhật';
+    btnLuu.style.background = '#f39c12';
+}
+
+// 2. Làm mới form
+function lamMoiFormTb() {
+    document.getElementById('form_ma_tb').value = '';
+    document.getElementById('form_ma_tb').disabled = false;
+    document.getElementById('form_ten_tb').value = '';
+    document.getElementById('form_phong_tb').value = '';
+    document.getElementById('form_status_tb').value = 'Sẵn sàng';
+    isEditMode = false;
+    
+    // Đổi nút về Thêm mới
+    let btnLuu = document.getElementById('btn_luu_tb');
+    btnLuu.innerText = 'Thêm mới';
+    btnLuu.style.background = '#3498db';
+}
+
+// 3. Xử lý Thêm mới hoặc Cập nhật
+function luuThietBi() {
+    let maTb = document.getElementById('form_ma_tb').value.trim();
+    let tenTb = document.getElementById('form_ten_tb').value.trim();
+    let phong = document.getElementById('form_phong_tb').value.trim();
+    let status = document.getElementById('form_status_tb').value;
+
+    if (!maTb || !tenTb || !phong) {
+        alert("Vui lòng nhập đầy đủ Mã, Tên thiết bị và Phòng!");
+        return;
+    }
+
+    let action = isEditMode ? 'update' : 'add';
+
+    fetch('api_manage_equipment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action, ma_tb: maTb, ten_tb: tenTb, phong: phong, status: status })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            lamMoiFormTb();
+            loadAdminTabs(); 
+        }
+    });
+}
+
+// 4. Xử lý Xóa / Thanh lý thiết bị
+function xoaThietBi(maTb) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa/thanh lý thiết bị ${maTb}?`)) return;
+
+    fetch('api_manage_equipment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', ma_tb: maTb })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if (data.status === 'success') {
+            lamMoiFormTb();
+            loadAdminTabs();
+        }
+    })
+    .catch(error => console.error('Lỗi xóa thiết bị:', error));
 }
 
 // ==========================================

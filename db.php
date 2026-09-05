@@ -5,9 +5,9 @@ $pass = "";
 $dbname = "ql_muonthietbi";
 
 $conn = mysqli_connect($host, $user, $pass, $dbname);
-mysqli_set_charset($conn, "utf8");
 
 if (!$conn) {
-    die("Lỗi kết nối CSDL: " . mysqli_connect_error());
+    die(json_encode(["status" => "error", "message" => "Lỗi kết nối CSDL: " . mysqli_connect_error()]));
 }
+mysqli_set_charset($conn, "utf8mb4");
 ?>

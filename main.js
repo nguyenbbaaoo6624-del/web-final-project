@@ -1,3 +1,4 @@
+const API_URL = "";
 
 // XỬ LÝ ĐĂNG NHẬP & ĐĂNG KÝ
 
@@ -13,7 +14,7 @@ function xuLyDangNhap() {
         return;
     }
 
-    fetch('api_login.php', {
+    fetch(API_URL + 'api_login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: u, password: p })
@@ -54,7 +55,7 @@ function xuLyDangKy() {
         return;
     }
 
-    fetch('api_register.php', {
+    fetch(API_URL + 'api_register.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: u, password: p })
@@ -80,7 +81,7 @@ let allEquipments = [];
 
 // Hàm fetch dữ liệu từ CSDL
 function loadThietBi() {
-    fetch('api_get_equipments.php')
+    fetch(API_URL + 'api_get_equipments.php')
     .then(res => res.json())
     .then(data => {
         allEquipments = data;
@@ -189,7 +190,7 @@ function guiYeuCauMuon() {
         // Nối tên phòng vào mục đích
         let mucDichGop = `[${phong}] ${mucDichNhap}`;
 
-        fetch('api_borrow.php', {
+        fetch(API_URL + 'api_borrow.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -230,7 +231,22 @@ function loadDuLieuSinhVien() {
     let nameElement = document.getElementById("user_fullname");
     if(nameElement) nameElement.innerText = currentUser;
 
-    fetch('api_get_borrows.php')
+    // Nạp thông tin Hồ sơ cá nhân
+    let profileUserEl = document.getElementById('profile_username');
+    if (profileUserEl) profileUserEl.innerText = currentUser;
+    
+    fetch(API_URL + 'api_get_users.php')
+    .then(res => res.json())
+    .then(users => {
+        let me = users.find(u => u.username === currentUser);
+        if (me) {
+            let mssvEl = document.getElementById('profile_mssv');
+            if (mssvEl) mssvEl.innerText = me.mssv ? me.mssv : "Chưa cập nhật";
+        }
+    })
+    .catch(e => console.error(e));
+
+    fetch(API_URL + 'api_get_borrows.php')
     .then(res => res.text())
     .then(text => {
         try {
@@ -242,8 +258,13 @@ function loadDuLieuSinhVien() {
             let htmlHistory = '';
             let htmlNoti = '';
             let htmlSelectBaoHong = '<option value="">-- Chọn thiết bị đang mượn --</option>';
+            
             let countDangCho = 0;
             let countDangMuon = 0;
+            let countCanTra = 0; // Biến đếm số lượng thiết bị cần trả hôm nay
+
+            // Định dạng ngày hiện tại (YYYY-MM-DD)
+            let today = new Date().toISOString().split('T')[0];
             
             myBorrows.forEach(p => {
                 let statusColor = '#f39c12';
@@ -258,8 +279,17 @@ function loadDuLieuSinhVien() {
                 } else if (p.status === 'Đã duyệt') {
                     countDangMuon++;
                     statusColor = '#2ecc71';
+                    
+                    // Nút trả thiết bị
                     actionBtn = `<button onclick="yeuCauTra(${p.id})" class="btn-primary" style="padding: 4px 8px; font-size: 12px; margin-left: 8px;">Trả thiết bị</button>`;
                     htmlSelectBaoHong += `<option value="${p.ten_tb}">${p.ten_tb} (Mã phiếu: PM-${p.id})</option>`;
+                    
+                    // Logic kiểm tra hạn trả để tăng biến đếm
+                    if (p.ngay_tra <= today) {
+                        countCanTra++;
+                        actionBtn += `<br><small style="color: #d63031; font-weight: bold;">(Đến hạn trả!)</small>`;
+                    }
+
                 } else if (p.status === 'Chờ xác nhận trả') {
                     statusColor = '#e67e22';
                     actionBtn = `<small style="color:#e67e22; margin-left: 8px;">(Đang chờ Admin duyệt trả)</small>`;
@@ -290,12 +320,19 @@ function loadDuLieuSinhVien() {
             });
             
             if(document.getElementById('ds_lichsu_toanbo')) document.getElementById('ds_lichsu_toanbo').innerHTML = htmlHistory || '<tr><td colspan="5" style="text-align:center;">Chưa có lịch sử mượn</td></tr>';
+            
             if(document.getElementById('ds_lichsu_ganday')) document.getElementById('ds_lichsu_ganday').innerHTML = htmlHistory || '<tr><td colspan="4" style="text-align:center;">Trống</td></tr>';
+            
             if(document.getElementById('ds_thongbao')) document.getElementById('ds_thongbao').innerHTML = htmlNoti || '<li style="padding: 15px; text-align: center;">Chưa có thông báo mới.</li>';
             if(document.getElementById('thietbi_hong')) document.getElementById('thietbi_hong').innerHTML = htmlSelectBaoHong;
             
+            let elCanTra = document.getElementById('ds_cantra_homnay');
+            if(elCanTra) elCanTra.innerHTML = htmlCanTraHomNay || '<div style="padding: 10px; color: green;">Không có thiết bị nào đến hạn trả hôm nay.</div>';
+            
             if(document.getElementById('stat_dangcho')) document.getElementById('stat_dangcho').innerText = countDangCho;
             if(document.getElementById('stat_dangmuon')) document.getElementById('stat_dangmuon').innerText = countDangMuon;
+            if(document.getElementById('stat_cantra')) document.getElementById('stat_cantra').innerText = countCanTra;
+            
         } catch(e) {
             console.error("Lỗi JSON:", text);
         }
@@ -310,7 +347,7 @@ function guiBaoHong() {
 
     if (!thietBi || !moTa) return alert("Vui lòng nhập đủ thông tin!");
 
-    fetch('api_create_report.php', {
+    fetch(API_URL + 'api_create_report.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: currentUser, thiet_bi: thietBi, mo_ta: moTa })
@@ -324,7 +361,7 @@ function guiBaoHong() {
 function yeuCauTra(borrowId) {
     if (!confirm("Bạn có chắc chắn muốn gửi yêu cầu trả thiết bị này?")) return;
 
-    fetch('api_return_borrow.php', {
+    fetch(API_URL + 'api_return_borrow.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -348,7 +385,7 @@ function xacNhanTraAdmin(borrowId, maTb) {
     if (condition === null) return; // Nhấn Hủy
     if (condition.trim() === '') condition = "Bình thường";
 
-    fetch('api_return_borrow.php', {
+    fetch(API_URL + 'api_return_borrow.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -377,7 +414,7 @@ function loadPhieuMuon() {
     let adminName = document.getElementById("admin_fullname");
     if(currentUser && adminName) adminName.innerText = currentUser;
 
-    fetch('api_get_borrows.php')
+    fetch(API_URL + 'api_get_borrows.php')
     .then(res => res.text())
     .then(text => {
         let dashElement = document.getElementById('ds_phieumuon_dashboard') || document.getElementById('ds_phieumuon');
@@ -492,7 +529,7 @@ function xuLyPhieu(id, status) {
         if (lyDo === null) return; 
     }
 
-    fetch('api_process_borrow.php', {
+    fetch(API_URL + 'api_process_borrow.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -515,7 +552,7 @@ function xuLyPhieu(id, status) {
 function huyPhieuMuon(id) {
     if(!confirm("Bạn có chắc chắn muốn hủy yêu cầu mượn này?")) return;
     
-    fetch('api_cancel_borrow.php', {
+    fetch(API_URL + 'api_cancel_borrow.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id })
@@ -529,13 +566,17 @@ function huyPhieuMuon(id) {
 
 function loadAdminTabs() {
     // Tải danh sách Báo hỏng
-    fetch('api_get_reports.php').then(res => res.json()).then(data => {
+    fetch(API_URL + 'api_get_reports.php').then(res => res.json()).then(data => {
         let html = '';
         let countHong = 0;
         data.forEach(rp => {
             if(rp.status === 'Chờ xử lý') countHong++;
             
-            let logText = rp.status === 'Đã sửa xong' ? `Chi phí: ${rp.chi_phi}đ<br><small>${rp.nhat_ky_sua}</small>` : 'Đang chờ';
+            // Xử lý che giá trị null của dữ liệu cũ
+            let nhatKy = rp.nhat_ky_sua ? rp.nhat_ky_sua : 'Không có ghi chú';
+            let chiPhi = rp.chi_phi ? rp.chi_phi : 0;
+            
+            let logText = rp.status === 'Đã sửa xong' ? `Chi phí: ${chiPhi}đ<br><small>${nhatKy}</small>` : 'Đang chờ';
             
             let btn = rp.status === 'Chờ xử lý' 
                 ? `<button onclick="hoanTatBaoTri(${rp.id}, '${rp.thiet_bi}')" style="padding: 5px 10px; background: #2ecc71; color: white; border: none; border-radius: 3px; cursor: pointer;">Sửa xong</button>` 
@@ -564,7 +605,7 @@ function loadAdminTabs() {
     }
 
     // Tải danh sách thiết bị cho Admin
-    fetch('api_get_equipments.php').then(res => res.json()).then(data => {
+    fetch(API_URL + 'api_get_equipments.php').then(res => res.json()).then(data => {
         window.adminEquipments = data;
         
         let danhSachPhong = [...new Set(data.map(tb => tb.phong ? tb.phong : 'Kho chung'))];
@@ -589,14 +630,18 @@ function loadAdminTabs() {
     });
 
     // Tải danh sách Người dùng
-    fetch('api_get_users.php').then(res => res.json()).then(data => {
+    fetch(API_URL + 'api_get_users.php').then(res => res.json()).then(data => {
         let html = '';
         data.forEach(u => {
+            // Logic: Nếu là admin thì in dấu '-', ngược lại thì in mssv (nếu không có thì báo Chưa cập nhật)
+            let mssvText = u.role === 'admin' ? '<span style="color:#bdc3c7; font-weight:bold;">-</span>' : (u.mssv ? u.mssv : '<span style="color:#e74c3c">Chưa cập nhật</span>');
+            
             html += `<tr>
                 <td><b>${u.username}</b></td>
+                <td>${mssvText}</td>
                 <td>${u.role}</td>
                 <td>
-                    ${u.role !== 'admin' ? `<button onclick="xoaUser('${u.username}')" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">Xóa</button>` : 'Mặc định'}
+                    ${u.role !== 'admin' ? `<button onclick="xoaUser('${u.username}')" style="padding: 5px 10px; background: #e74c3c; color: white; border: none; border-radius: 3px; cursor: pointer;">Xóa</button>` : '<span style="color: #7f8c8d;">Mặc định</span>'}
                 </td>
             </tr>`;
         });
@@ -640,7 +685,7 @@ function renderThietBiAdmin() {
 function xoaNguoiDung(username) {
     if(!confirm("Bạn có chắc chắn muốn xóa tài khoản: " + username + "?")) return;
     
-    fetch('api_delete_user.php', {
+    fetch(API_URL + 'api_delete_user.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username })
@@ -713,7 +758,7 @@ function kiemTraDangNhapTrangChu() {
 }
 
 function loadTrangChu() {
-    fetch('api_get_equipments.php')
+    fetch(API_URL + 'api_get_equipments.php')
     .then(res => res.json())
     .then(data => {
         let html = '';
@@ -750,28 +795,37 @@ function suaThietBi(maTb, tenTb, phong, status) {
     document.getElementById('form_status_tb').value = status;
     isEditMode = true;
 
-let btnLuu = document.getElementById('btn_luu_tb');
+    let btnLuu = document.getElementById('btn_luu_tb');
     btnLuu.innerText = 'Cập nhật';
     btnLuu.style.background = '#f39c12';
 }
 
-// Tính năng: Xác nhận đã sửa xong thiết bị
-function hoanTatBaoTri(id, maTb) {
-    let nhatKy = prompt("Nhập nhật ký sửa chữa (VD: Thay linh kiện...):", "");
-    if (nhatKy === null) return; 
-    let chiPhi = prompt("Nhập chi phí sửa chữa (VNĐ):", "0");
-    if (chiPhi === null) return; 
+// Tính năng: Admin xác nhận sửa chữa xong
+function hoanTatBaoTri(id, thietBi) {
+    let nhatKy = prompt(`Nhập chi tiết sửa chữa cho thiết bị [${thietBi}]:`);
+    if (nhatKy === null) return; // Hủy thao tác nếu bấm Cancel
+    
+    let chiPhi = prompt("Nhập tổng chi phí sửa chữa (VNĐ) - Nhập số:");
+    if (chiPhi === null) return;
 
-    fetch('api_manage_report.php', {
+    fetch(API_URL + 'api_manage_report.php', { // Nếu file API của bạn tên khác (VD: api_manage_reports.php) thì sửa lại tên ở đây
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id, ma_tb: maTb, nhat_ky: nhatKy, chi_phi: chiPhi })
+        body: JSON.stringify({ 
+            id: id, 
+            chi_phi: chiPhi, 
+            nhat_ky: nhatKy,
+            thiet_bi: thietBi // Gửi tên thiết bị để máy chủ biết đường mở khóa
+        })
     })
     .then(res => res.json())
     .then(data => {
         alert(data.message);
-        if(data.status === 'success') loadAdminTabs();
-    });
+        if(data.status === 'success') {
+            loadAdminTabs(); // Tải lại toàn bộ bảng và số liệu
+        }
+    })
+    .catch(err => console.error("Lỗi bảo trì:", err));
 }
 
 // 2. Làm mới form
@@ -803,7 +857,7 @@ function luuThietBi() {
 
     let action = isEditMode ? 'update' : 'add';
 
-    fetch('api_manage_equipment.php', {
+    fetch(API_URL + 'api_manage_equipment.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: action, ma_tb: maTb, ten_tb: tenTb, phong: phong, status: status })
@@ -822,7 +876,7 @@ function luuThietBi() {
 function xoaThietBi(maTb) {
     if (!confirm(`Bạn có chắc chắn muốn xóa/thanh lý thiết bị ${maTb}?`)) return;
 
-    fetch('api_manage_equipment.php', {
+    fetch(API_URL + 'api_manage_equipment.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', ma_tb: maTb })
@@ -836,6 +890,60 @@ function xoaThietBi(maTb) {
         }
     })
     .catch(error => console.error('Lỗi xóa thiết bị:', error));
+}
+
+function xuatCSV(tableId, filename) {
+    let table = document.getElementById(tableId);
+    if (!table) return;
+    
+    // Lấy tất cả các hàng trong bảng
+    let rows = table.querySelectorAll('tr');
+    let csvContent = "";
+    
+    rows.forEach(row => {
+        let cols = row.querySelectorAll('td, th');
+        let rowData = [];
+        cols.forEach(col => {
+            // Làm sạch dữ liệu và bọc trong dấu ngoặc kép để tránh lỗi dấu phẩy
+            let data = col.innerText.replace(/"/g, '""');
+            rowData.push('"' + data + '"');
+        });
+        csvContent += rowData.join(",") + "\n";
+    });
+    
+    // Thêm BOM để Excel đọc đúng tiếng Việt (UTF-8)
+    let blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function doiMatKhau() {
+    let currentUser = localStorage.getItem("currentUser");
+    let oldPass = document.getElementById('old_pass').value;
+    let newPass = document.getElementById('new_pass').value;
+
+    if(!oldPass || !newPass) {
+        alert("Vui lòng nhập đầy đủ mật khẩu cũ và mới!");
+        return;
+    }
+
+    fetch(API_URL + 'api_change_password.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentUser, old_pass: oldPass, new_pass: newPass })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        if(data.status === 'success') {
+            document.getElementById('old_pass').value = '';
+            document.getElementById('new_pass').value = '';
+        }
+    });
 }
 
 

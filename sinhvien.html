@@ -24,6 +24,7 @@
                 <li onclick="chuyenTab('history', this)">Lịch sử mượn</li>
                 <li onclick="chuyenTab('report', this)">Báo hỏng thiết bị</li>
                 <li onclick="chuyenTab('notification', this)">Thông báo</li>
+                <li onclick="chuyenTab('profile', this)">Hồ sơ cá nhân</li>
             </ul>
         </aside>
 
@@ -37,7 +38,7 @@
                 </div>
             </header>
 
-            <!-- ================= TAB 1: BẢNG ĐIỀU KHIỂN ================= -->
+            <!-- TAB 1: BẢNG ĐIỀU KHIỂN -->
             <div id="tab-dashboard" class="tab-content" style="display: block;">
                 <!-- 3 Thẻ số liệu tổng quan -->
                 <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
@@ -83,27 +84,30 @@
                         </table>
 
                         <h3>2. Đăng ký mượn thiết bị</h3>
-                        <!-- Cấu trúc Form mượn sau khi sửa -->
-                            <form id="form_muon" style="display:none; background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-                               <h4>Đăng ký mượn thiết bị</h4>
-                               <p><b>Thiết bị chọn:</b> <span id="tb_duoc_chon" style="color: #2980b9; font-weight: bold;"></span></p>
-                               <p><b>Phòng sử dụng:</b> <span id="phong_su_dung" style="color: #2980b9; font-weight: bold;"></span></p>
-                               <input type="hidden" id="ma_tb_muon">
-    
-                               <div style="margin-top: 10px;">
-                                  <label>Mục đích mượn:</label>
-                                  <input type="text" id="muc_dich_muon" placeholder="VD: Dạy học, Thuyết trình..." style="width: 100%; padding: 8px; margin-top: 5px;">
-                               </div>
-                               <div style="margin-top: 10px;">
-                                  <label>Ngày trả dự kiến:</label>
-                                  <input type="date" id="ngay_tra" style="width: 100%; padding: 8px; margin-top: 5px;">
-                               </div>
-                               <button type="button" onclick="guiYeuCauMuon()" style="margin-top: 15px; padding: 10px 20px; background: #2ecc71; color: white; border: none; cursor: pointer;">Gửi yêu cầu</button>
-                            </form>
+                        <!-- Cấu trúc Form mượn -->
+                        <form id="form_muon" style="display:none; background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                            <h4>Đăng ký mượn thiết bị</h4>
+                            <p><b>Thiết bị chọn:</b> <span id="tb_duoc_chon" style="color: #2980b9; font-weight: bold;"></span></p>
+                            <p><b>Phòng sử dụng:</b> <span id="phong_su_dung" style="color: #2980b9; font-weight: bold;"></span></p>
+                            <input type="hidden" id="ma_tb_muon">
+
+                            <div style="margin-top: 10px;">
+                                <label>Mục đích mượn:</label>
+                                <input type="text" id="muc_dich_muon" placeholder="VD: Dạy học, Thuyết trình..." style="width: 100%; padding: 8px; margin-top: 5px;">
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <label>Ngày trả dự kiến:</label>
+                                <input type="date" id="ngay_tra" style="width: 100%; padding: 8px; margin-top: 5px;">
+                            </div>
+                            <button type="button" onclick="guiYeuCauMuon()" style="margin-top: 15px; padding: 10px 20px; background: #2ecc71; color: white; border: none; cursor: pointer;">Gửi yêu cầu</button>
+                        </form>
                     </div>
 
-                    <!-- Cột phải: Lịch sử mượn gần đây -->
+                    <!-- Cột phải: Lịch báo hạn trả & Lịch sử mượn gần đây -->
                     <div class="table-section">
+                        <!-- Khu vực cảnh báo thiết bị cần trả hôm nay -->
+                        <div id="ds_cantra_homnay" style="margin-bottom: 20px;"></div>
+
                         <h3>Danh sách Mượn Gần đây</h3>
                         <table class="data-table">
                             <thead>
@@ -122,7 +126,7 @@
                 </div>
             </div>
 
-            <!-- ================= TAB 2: LỊCH SỬ MƯỢN ================= -->
+            <!-- TAB 2: LỊCH SỬ MƯỢN -->
             <div id="tab-history" class="tab-content" style="display: none;">
                 <div class="table-section">
                     <h3>Toàn bộ Lịch sử mượn thiết bị</h3>
@@ -143,7 +147,7 @@
                 </div>
             </div>
 
-            <!-- ================= TAB 3: BÁO HỎNG THIẾT BỊ ================= -->
+            <!-- TAB 3: BÁO HỎNG THIẾT BỊ -->
             <div id="tab-report" class="tab-content" style="display: none;">
                 <div class="table-section" style="max-width: 600px;">
                     <h3>Gửi báo cáo thiết bị hỏng</h3>
@@ -162,7 +166,7 @@
                 </div>
             </div>
 
-            <!-- ================= TAB 4: THÔNG BÁO ================= -->
+            <!-- TAB 4: THÔNG BÁO -->
             <div id="tab-notification" class="tab-content" style="display: none;">
                 <div class="table-section">
                     <h3>Thông báo từ Quản trị viên</h3>
@@ -170,6 +174,22 @@
                         <!-- Dữ liệu render từ JS -->
                         <li style="padding: 15px; border-bottom: 1px solid #eee; color: #7f8c8d; text-align: center;">Hiện chưa có thông báo mới nào.</li>
                     </ul>
+                </div>
+            </div>
+
+            <!-- TAB HỒ SƠ CÁ NHÂN -->
+            <div id="tab-profile" class="tab-content" style="display: none;">
+                <div class="table-section">
+                    <h3>Thông tin Sinh viên</h3>
+                    <p><b>Tài khoản:</b> <span id="profile_username"></span></p>
+                    <p><b>Mã số sinh viên (MSSV):</b> <span id="profile_mssv" style="color: #2980b9; font-weight: bold;">Chưa cập nhật</span></p>
+
+                    <h3 style="margin-top: 30px;">Đổi Mật Khẩu</h3>
+                    <div style="background: #ecf0f1; padding: 20px; border-radius: 5px; max-width: 400px;">
+                        <input type="password" id="old_pass" placeholder="Nhập mật khẩu cũ" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 4px;">
+                        <input type="password" id="new_pass" placeholder="Nhập mật khẩu mới" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 4px;">
+                        <button onclick="doiMatKhau()" style="padding: 10px 20px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Xác nhận đổi</button>
+                    </div>
                 </div>
             </div>
 

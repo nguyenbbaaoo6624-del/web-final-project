@@ -25,7 +25,7 @@ Dự án phát triển hệ thống web quản lý mượn/trả thiết bị ph
 
 # Thành viên nhóm :
 * Nguyễn Lê Gia Bảo (nhóm trưởng) 2200006147
-* Phạm Nguyễn Nhật Sơn
+* Phạm Nguyễn Nhật Sơn 2200006700
 * Trần Tuấn Anh 2200004293
 * Phan Đức Anh 2200004289
-* Lê Nguyễn Phát Tài
+* Lê Nguyễn Phát Tài 220000
